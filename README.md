@@ -5,6 +5,7 @@ The intention with the project is tp exercise the Data engineering practises. Th
 -  Data design pattern: Medallion Architecture.
 -  Orchestrator and Scheduler: Airflow
 -  Cleansing, Validation and Transformation: PySpark
+-  Kimball data model: DBT + Spark
 -  Spark Cluster: EMR, Databricks, ... TO DECIDE
 -  Data Storage: Iceberg, Snowflake, ... TO DECIDE
 -  BI/Data Analytics: ... TO DECIDE
