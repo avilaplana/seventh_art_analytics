@@ -1,2 +1,4 @@
 # Ignore all files in raw_data/
+.idea/
 raw_data/*
+.python-version
