@@ -2,7 +2,7 @@
 # Variables
 # ------------------------
 PYTHON_VERSION ?= 3.11.7       # Python version for pyenv
-VENV_NAME ?= bronze-env
+VENV_NAME ?= extract-env
 REQ_FILE = requirements.txt
 SCRIPT = upload_to_s3.py
 
