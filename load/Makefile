@@ -7,8 +7,8 @@ REQ_FILE = requirements.txt
 SCRIPT = ../extract/upload_to_s3.py
 
 S3_ENDPOINT = http://localhost:9000
-ACCESS_KEY = minioadmin
-SECRET_KEY = minioadmin123
+ACCESS_KEY = admin
+SECRET_KEY = password
 REGION = eu-west-2
 # ------------------------
 # Targets
