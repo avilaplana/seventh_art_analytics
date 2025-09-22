@@ -3,8 +3,8 @@
 # ------------------------
 PYTHON_VERSION ?= 3.11.7       # Python version for pyenv
 VENV_NAME ?= load-env
-REQ_FILE = requirements.txt
-SCRIPT = ../extract/upload_to_s3.py
+REQ_FILE = ../extract/requirements.txt
+SCRIPT = ../extract/src/upload_to_s3.py
 
 S3_ENDPOINT = http://localhost:9000
 ACCESS_KEY = admin

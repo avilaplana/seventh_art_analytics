@@ -4,7 +4,7 @@
 PYTHON_VERSION ?= 3.11.7       # Python version for pyenv
 VENV_NAME ?= extract-env
 REQ_FILE = requirements.txt
-SCRIPT = upload_to_s3.py
+SCRIPT = src/upload_to_s3.py
 
 S3_ENDPOINT = http://localhost:9000
 ACCESS_KEY = minioadmin
