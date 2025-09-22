@@ -2,26 +2,30 @@
 # Variables
 # ------------------------
 PYTHON_VERSION ?= 3.11.7       # Python version for pyenv
-VENV_NAME ?= extract-env
-REQ_FILE = requirements.txt
-SCRIPT = src/upload_to_s3.py
+VENV_NAME ?= load-env
+REQ_FILE = ../extract/requirements.txt
+SCRIPT = ../extract/src/upload_to_s3.py
 
 S3_ENDPOINT = http://localhost:9000
-ACCESS_KEY = minioadmin
-SECRET_KEY = minioadmin123
+ACCESS_KEY = admin
+SECRET_KEY = password
 REGION = eu-west-2
+
+SPARK_CONTAINER = spark-iceberg
+SPARK_JOB = /app/src/upload_to_iceberg.py
+
 # ------------------------
 # Targets
 # ------------------------
 
-.PHONY: up test clean
+.PHONY: up extract spark-submit clean
 
 # Start MinIO container in detached mode
 up:
 	docker compose up -d
 
 # Setup local Python env and run the script
-test:
+extract:
 	# Install Python via pyenv if not already installed
 	pyenv install -s $(PYTHON_VERSION)
 	# Create virtualenv if not exists
@@ -37,6 +41,14 @@ test:
 	SECRET_KEY=$(SECRET_KEY) \
 	REGION=$(REGION) \
 	python $(SCRIPT)
+
+# Submit PySpark job to Spark-Iceberg container
+load:
+	docker exec -it $(SPARK_CONTAINER) \
+		spark-submit \
+		--master local[*] \
+		$(SPARK_JOB)
+
 
 # Stop MinIO and remove containers/volumes
 clean:
