@@ -12,13 +12,28 @@ SECRET_KEY = password
 REGION = eu-west-2
 
 SPARK_CONTAINER = spark-iceberg
-SPARK_JOB = /app/src/upload_to_iceberg.py
+SPARK_JOB_NAME_BASICS = /app/src/upload_to_iceberg_name_basics.py
+SPARK_JOB_TITLE_AKAS = /app/src/upload_to_iceberg_title_akas.py
+SPARK_JOB_TITLE_BASICS = /app/src/upload_to_iceberg_title_basics.py
+SPARK_JOB_TITLE_CREW = /app/src/upload_to_iceberg_title_crew.py
+SPARK_JOB_TITLE_EPISODE = /app/src/upload_to_iceberg_title_episode.py
+SPARK_JOB_TITLE_PRINCIPALS = /app/src/upload_to_iceberg_title_principals.py
+SPARK_JOB_TITLE_RATINGS = /app/src/upload_to_iceberg_title_ratings.py
+
+SPARK_JOBS = \
+	$(SPARK_JOB_NAME_BASICS) \
+	$(SPARK_JOB_TITLE_AKAS) \
+	$(SPARK_JOB_TITLE_BASICS) \
+	$(SPARK_JOB_TITLE_CREW) \
+	$(SPARK_JOB_TITLE_EPISODE) \
+	$(SPARK_JOB_TITLE_PRINCIPALS) \
+	$(SPARK_JOB_TITLE_RATINGS)
 
 # ------------------------
 # Targets
 # ------------------------
 
-.PHONY: up extract spark-submit clean
+.PHONY: up extract load clean
 
 # Start MinIO container in detached mode
 up:
@@ -42,12 +57,23 @@ extract:
 	REGION=$(REGION) \
 	python $(SCRIPT)
 
-# Submit PySpark job to Spark-Iceberg container
+# Target to load all jobs sequentially
 load:
-	docker exec -it $(SPARK_CONTAINER) \
-		spark-submit \
-		--master local[*] \
-		$(SPARK_JOB)
+	@for job in $(SPARK_JOBS); do \
+		echo "=========================================="; \
+		echo "Running Spark job: $$job"; \
+		echo "=========================================="; \
+		docker exec -it $(SPARK_CONTAINER) \
+			spark-submit \
+			--master local[*] \
+			$$job; \
+		if [ $$? -ne 0 ]; then \
+			echo "Error running $$job"; \
+			exit 1; \
+		fi; \
+	done
+
+
 
 
 # Stop MinIO and remove containers/volumes
