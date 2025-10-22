@@ -36,4 +36,4 @@ title_episode_set_null_values_df = title_episode_rename_columns_df \
 # Load to Iceberg
 title_episode_set_null_values_df.writeTo("demo.imdb.title_episode").createOrReplace()
 
-
+spark.stop()

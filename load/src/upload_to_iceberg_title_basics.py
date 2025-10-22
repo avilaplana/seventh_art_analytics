@@ -40,3 +40,5 @@ title_basics_set_null_values_df = title_rename_columns_df \
 
 # Load to Iceberg# Load to Iceberg
 title_basics_set_null_values_df.writeTo("demo.imdb.title_basics").createOrReplace()
+
+spark.stop()

@@ -41,3 +41,5 @@ title_akas_set_null_values_df = title_akas_rename_columns_df \
 
 # Load to Iceberg
 title_akas_set_null_values_df.writeTo("demo.imdb.title_akas").createOrReplace()
+
+spark.stop()
