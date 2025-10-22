@@ -94,6 +94,11 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__WEBSERVER__SECRET_KEY: "b7c51d01e7c447d88a07de15efbf14cd"
+      S3_ENDPOINT: http://minio:9000
+      ACCESS_KEY: admin
+      SECRET_KEY: password
+      REGION: eu-west-2
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./extract/src:/opt/airflow/extract/src
@@ -115,6 +120,11 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: "b7c51d01e7c447d88a07de15efbf14cd"
+      S3_ENDPOINT: http://minio:9000
+      ACCESS_KEY: admin
+      SECRET_KEY: password
+      REGION: eu-west-2
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./extract/src:/opt/airflow/extract/src
