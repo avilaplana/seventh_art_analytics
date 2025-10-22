@@ -33,3 +33,5 @@ title_crew_set_null_values_df = title_crew_rename_columns_df \
 
 # Load to Iceberg
 title_crew_set_null_values_df.writeTo("demo.imdb.title_crew").createOrReplace()
+
+spark.stop()

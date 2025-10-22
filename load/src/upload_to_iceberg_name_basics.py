@@ -38,3 +38,4 @@ name_basics_set_null_death_year_df = name_rename_columns_df.withColumn("death_ye
 # Load to Iceberg
 name_basics_set_null_death_year_df.writeTo("demo.imdb.name_basics").createOrReplace()
 
+spark.stop()

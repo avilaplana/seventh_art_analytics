@@ -35,3 +35,4 @@ ratings_set_null_values_df = ratings_rename_columns_df \
 # Load to Iceberg
 ratings_set_null_values_df.writeTo("demo.imdb.title_ratings").createOrReplace()
 
+spark.stop()
