@@ -4,7 +4,7 @@
 PYTHON_VERSION ?= 3.11.7       # Python version for pyenv
 VENV_NAME ?= extract-env
 REQ_FILE = requirements.txt
-SCRIPT = src/upload_to_s3.py
+SCRIPT = src/extract_to_s3.py
 
 S3_ENDPOINT = http://localhost:9000
 ACCESS_KEY = minioadmin
@@ -21,17 +21,15 @@ up:
 	docker compose up -d
 
 # Setup local Python env and run the script
-test:
-	# Install Python via pyenv if not already installed
+extract:
+	@echo "Setting up Python environment..."
+	# Install Python and create virtualenv if needed
 	pyenv install -s $(PYTHON_VERSION)
-	# Create virtualenv if not exists
 	pyenv virtualenv -f $(PYTHON_VERSION) $(VENV_NAME) || true
-	# Activate virtualenv locally
-	pyenv local $(VENV_NAME)
-	# Upgrade pip and install dependencies
-	pip install --upgrade pip
-	pip install -r $(REQ_FILE)
-    # Inject environment variables and run the script
+	# Activate the virtualenv explicitly and run everything in one shell
+	. $$(pyenv root)/versions/$(VENV_NAME)/bin/activate && \
+	pip install --upgrade pip && \
+	pip install -r $(REQ_FILE) && \
 	S3_ENDPOINT=$(S3_ENDPOINT) \
 	ACCESS_KEY=$(ACCESS_KEY) \
 	SECRET_KEY=$(SECRET_KEY) \
@@ -41,3 +39,5 @@ test:
 # Stop MinIO and remove containers/volumes
 clean:
 	docker compose down -v
+	pyenv uninstall -f $(VENV_NAME) || true
+	rm -f .python-version
