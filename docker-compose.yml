@@ -87,7 +87,9 @@ services:
       iceberg_net:
 
   airflow-webserver:
-    image: apache/airflow:2.9.3
+    build:
+      context: .
+      dockerfile: ./airflow/docker/Dockerfile
     depends_on:
       - postgres
     environment:
@@ -99,13 +101,14 @@ services:
       ACCESS_KEY: admin
       SECRET_KEY: password
       REGION: eu-west-2
+      # AIRFLOW_CONN_SPARK_DEFAULT: 'spark://spark-iceberg:7077'
+
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./extract/src:/opt/airflow/extract/src
       - ./load/src:/opt/airflow/load/src
     command: >
-      bash -c "pip install -r /opt/airflow/dags/requirements.txt &&
-               airflow db upgrade &&
+      bash -c "airflow db upgrade &&
                airflow users create --username admin --password admin --firstname a --lastname d --role Admin --email admin@example.com || true &&
                airflow webserver"
     ports:
@@ -114,7 +117,9 @@ services:
       iceberg_net:
 
   airflow-scheduler:
-    image: apache/airflow:2.9.3
+    build:
+      context: .
+      dockerfile: ./airflow/docker/Dockerfile
     depends_on:
       - airflow-webserver
     environment:
@@ -125,12 +130,13 @@ services:
       ACCESS_KEY: admin
       SECRET_KEY: password
       REGION: eu-west-2
+      # AIRFLOW_CONN_SPARK_DEFAULT: 'spark://spark-iceberg:7077'
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./extract/src:/opt/airflow/extract/src
       - ./load/src:/opt/airflow/load/src
     command: >
-      bash -c "pip install -r /opt/airflow/dags/requirements.txt && airflow scheduler"
+      bash -c "sleep 10 && airflow scheduler"
     networks:
       iceberg_net:
 
