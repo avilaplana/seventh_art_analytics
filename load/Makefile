@@ -59,12 +59,12 @@ extract:
 # Target to load all jobs sequentially
 load:
 	@for job in $(SPARK_JOBS); do \
-		echo "=========================================="; \
-		echo "Running Spark job: $$job"; \
-		echo "=========================================="; \
+		echo "================================================================"; \
+		echo "Submit Spark job: $$job against Spark cluster in standalone mode"; \
+		echo "================================================================"; \
 		docker exec -it $(SPARK_CONTAINER) \
 			spark-submit \
-			--master local[*] \
+			--master spark://spark-iceberg:7077 \
 			$$job; \
 		if [ $$? -ne 0 ]; then \
 			echo "Error running $$job"; \
