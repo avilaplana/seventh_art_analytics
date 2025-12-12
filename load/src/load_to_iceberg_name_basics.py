@@ -21,16 +21,14 @@ CREATE TABLE IF NOT EXISTS demo.imdb.name_basics (
 ) USING iceberg
 """)
 
-
-
-# Read from raw data from S3
+# Read from raw data from S3/MinIO
 name_basics_df = spark.read \
     .option("header", True) \
     .option("sep", "\t") \
     .csv(f"s3a://{object_path}/name.basics.tsv.gz")
 
 # Rename columns
-name_rename_columns_df = name_basics_df .withColumnsRenamed({"nconst": "id", "primaryName": "primary_name", "birthYear": "birth_year", "deathYear": "death_year", "primaryProfession": "primary_profession", "knownForTitles": "titles"})
+name_rename_columns_df = name_basics_df.withColumnsRenamed({"nconst": "id", "primaryName": "primary_name", "birthYear": "birth_year", "deathYear": "death_year", "primaryProfession": "primary_profession", "knownForTitles": "titles"})
 
 # Set NULL when \N is found
 name_basics_set_null_death_year_df = name_rename_columns_df.withColumn("death_year",when(col("death_year") == "\\N", None).otherwise(col("death_year")))
