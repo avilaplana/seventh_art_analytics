@@ -6,8 +6,6 @@ from datetime import datetime, timedelta
 import sys
 
 # Add extract src dir to path
-sys.path.append("/opt/airflow/extract/src")
-import extract_to_s3
 
 default_args = {
     "owner": "airflow",
@@ -26,10 +24,26 @@ with DAG(
 ) as dag:
 
     # Step 1: Extract all IMDB raw files to S3/MinIO
-    extract_task = PythonOperator(
-        task_id="extract_to_s3",
-        python_callable=extract_to_s3.main,
-    )
+    EXTRACT_SCRIPT_DIR = "/opt/airflow/extract/src/"
+    extract_scripts = [
+        "extract_name_basics_to_s3",
+        "extract_title_akas_to_s3",
+        "extract_title_basics_to_s3",
+        "extract_title_crew_to_s3",
+        "extract_title_episode_to_s3",
+        "extract_title_principals_to_s3",
+        "extract_title_ratings_to_s3"
+        ]
+
+    extract_tasks = []
+    sys.path.append(EXTRACT_SCRIPT_DIR)
+
+    for script in extract_scripts:
+        extract_task = PythonOperator(
+            task_id=f"{script}",
+            python_callable=lambda script=script: __import__(script).main(),
+        )
+        extract_tasks.append(extract_task)
 
     # Step 2: Load each raw file from S3/MinIO to Iceberg using Spark jobs
     # Directory containing Spark job scripts
@@ -70,4 +84,4 @@ with DAG(
         spark_tasks.append(spark_task)
 
     # Step 3: Set dependencies (extract -> Spark jobs sequentially)
-    extract_task >> spark_tasks[0] >> spark_tasks[1] >> spark_tasks[2] >> spark_tasks[3] >> spark_tasks[4] >> spark_tasks[5] >> spark_tasks[6]
+    extract_tasks >> spark_tasks[0] >> spark_tasks[1] >> spark_tasks[2] >> spark_tasks[3] >> spark_tasks[4] >> spark_tasks[5] >> spark_tasks[6]
