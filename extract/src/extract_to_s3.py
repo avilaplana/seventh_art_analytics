@@ -11,16 +11,6 @@ REGION = os.environ['REGION']
 SOURCE_URL_PREFIX = "https://datasets.imdbws.com/"
 ROOT_BUCKET = "data"
 
-RAW_FILES = [
-    "name.basics.tsv.gz",
-    "title.akas.tsv.gz",
-    "title.basics.tsv.gz",
-    "title.crew.tsv.gz",
-    "title.episode.tsv.gz",
-    "title.principals.tsv.gz",
-    "title.ratings.tsv.gz",
-]
-
 def download_raw_data_from_source(url):
     """
     Return a file-like object streaming from the URL
@@ -54,7 +44,7 @@ def upload_raw_data_to_s3(s3_client, file_obj, bucket: str, raw_file: str):
 
     print(f"Uploaded {raw_file} → {bucket}/{object_key}")
 
-def main():
+def extract(raw_file):
     s3 = boto3.client(
         "s3",
         endpoint_url=S3_ENDPOINT,
@@ -72,11 +62,8 @@ def main():
         s3.create_bucket(Bucket=ROOT_BUCKET)
         print(f"Created bucket {ROOT_BUCKET}")
 
-    for raw_file in RAW_FILES:
-        url = f"{SOURCE_URL_PREFIX}{raw_file}"
-        print(f"Streaming {raw_file} from {url}")
-        file_obj = download_raw_data_from_source(url)
-        upload_raw_data_to_s3(s3, file_obj, ROOT_BUCKET, raw_file)
 
-if __name__ == "__main__":
-    main()
+    url = f"{SOURCE_URL_PREFIX}{raw_file}"
+    print(f"Streaming {raw_file} from {url}")
+    file_obj = download_raw_data_from_source(url)
+    upload_raw_data_to_s3(s3, file_obj, ROOT_BUCKET, raw_file)
