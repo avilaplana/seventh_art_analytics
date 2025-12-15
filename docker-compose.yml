@@ -54,7 +54,8 @@ services:
       - 9001:9001
       - 9000:9000
     command: ["server", "/data", "--console-address", ":9001"]
-
+    volumes:
+      - minio_data:/data
   mc:
     depends_on:
       - minio
@@ -142,6 +143,7 @@ services:
 
 volumes:
   postgres_db_volume:
+  minio_data:
 
 networks:
   iceberg_net:
