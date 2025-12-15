@@ -11,12 +11,12 @@ services:
       - rest
       - minio
     volumes:
-      - ./load/warehouse:/home/iceberg/warehouse
       - ./load/notebooks:/home/iceberg/notebooks/notebooks
     environment:
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_REGION=eu-west-2
+      - SPARK_SUBMIT_OPTS=-Dspark.sql.catalogImplementation=hive
     ports:
       - 8888:8888
       - 8080:8080
