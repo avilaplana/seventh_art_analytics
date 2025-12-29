@@ -6,14 +6,14 @@ spark = SparkSession.builder \
     .appName("load-title-crew-Iceberg-MinIO") \
     .getOrCreate()
 
-# Drop the table demo.imdb.title_crew
-spark.sql("""DROP TABLE IF EXISTS demo.imdb.title_crew""")
+# Drop the table demo.bronze.title_crew
+spark.sql("""DROP TABLE IF EXISTS demo.bronze.title_crew""")
 
 # Create Iceberg Table
 spark.sql("""
-CREATE TABLE IF NOT EXISTS demo.imdb.title_crew (
-    title_id STRING,
-    director_id STRING,
+CREATE TABLE IF NOT EXISTS demo.bronze.title_crew (
+    tconst STRING,
+    directors STRING,
     writers STRING
 ) USING iceberg
 """)
@@ -24,14 +24,7 @@ title_crew_df = spark.read \
     .option("sep", "\t") \
     .csv(f"s3a://{object_path}/title.crew.tsv.gz")
 
-# Rename columns
-title_crew_rename_columns_df = title_crew_df.withColumnsRenamed({"tconst": "title_id", "directors": "director_id"})
-
-# Set NULL when \N is found
-title_crew_set_null_values_df = title_crew_rename_columns_df \
-    .withColumn("writers",when(col("writers") == "\\N", None).otherwise(col("writers")))
-
 # Load to Iceberg
-title_crew_set_null_values_df.writeTo("demo.imdb.title_crew").createOrReplace()
+title_crew_df.writeTo("demo.bronze.title_crew").createOrReplace()
 
 spark.stop()

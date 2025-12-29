@@ -6,15 +6,15 @@ spark = SparkSession.builder \
     .appName("load-title-principals-Iceberg-MinIO") \
     .getOrCreate()
 
-# Drop the table demo.imdb.title_principals
-spark.sql("""DROP TABLE IF EXISTS demo.imdb.title_principals""")
+# Drop the table demo.bronze.title_principals
+spark.sql("""DROP TABLE IF EXISTS demo.bronze.title_principals""")
 
 # Create Iceberg Table
 spark.sql("""
-CREATE TABLE IF NOT EXISTS demo.imdb.title_principals (
-    title_id STRING,
+CREATE TABLE IF NOT EXISTS demo.bronze.title_principals (
+    tconst STRING,
     ordering STRING,
-    name_id STRING,
+    nconst STRING,
     category STRING,
     job STRING,
     characters STRING
@@ -30,12 +30,7 @@ title_principals_df = spark.read \
 # Rename columns
 title_principals_rename_columns_df = title_principals_df.withColumnsRenamed({"tconst": "title_id", "nconst": "name_id"})
 
-# Set NULL when \N is found
-title_principals_set_null_values_df = title_principals_rename_columns_df \
-    .withColumn("job",when(col("job") == "\\N", None).otherwise(col("job"))) \
-    .withColumn("characters",when(col("characters") == "\\N", None).otherwise(col("characters")))
-
 # Load to Iceberg
-title_principals_set_null_values_df.writeTo("demo.imdb.title_principals").createOrReplace()
+title_principals_df.writeTo("demo.bronze.title_principals").createOrReplace()
 
 spark.stop()
