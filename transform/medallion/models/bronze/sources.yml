@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: bronze
+    schema: bronze
+    tables:
+      - name: name_basics
+      - name: title_akas
+      - name: title_basics
+      - name: title_crew
+      - name: title_episodes
+      - name: title_principals
+      - name: title_ratings
