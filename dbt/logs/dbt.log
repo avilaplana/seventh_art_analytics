@@ -1,0 +1,60 @@
+[0m13:58:12.264649 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x110c6c290>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x110c979d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x110c97f90>]}
+
+
+============================== 13:58:12.266967 | d40325e7-5fa8-4e13-8e0f-55c1ac9a87da ==============================
+[0m13:58:12.266967 [info ] [MainThread]: Running with dbt=1.7.9
+[0m13:58:12.267249 [debug] [MainThread]: running dbt with arguments {'debug': 'False', 'write_json': 'True', 'log_path': 'logs', 'send_anonymous_usage_stats': 'True', 'version_check': 'True', 'partial_parse': 'True', 'use_colors': 'True', 'invocation_command': 'dbt debug --profile medallion --target dev', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'cache_selected_only': 'False', 'indirect_selection': 'eager', 'profiles_dir': '/Users/alvarovilaplana/.dbt', 'printer_width': '80', 'static_parser': 'True', 'log_format': 'default', 'introspect': 'True', 'no_print': 'None', 'target_path': 'None', 'use_experimental_parser': 'False', 'log_cache_events': 'False', 'quiet': 'False', 'warn_error': 'None', 'fail_fast': 'False'}
+[0m13:58:12.267658 [info ] [MainThread]: dbt version: 1.7.9
+[0m13:58:12.267817 [info ] [MainThread]: python version: 3.11.7
+[0m13:58:12.267976 [info ] [MainThread]: python path: /Users/alvarovilaplana/.pyenv/versions/3.11.7/envs/transform-env/bin/python
+[0m13:58:12.268115 [info ] [MainThread]: os info: macOS-15.6.1-arm64-arm-64bit
+[0m13:58:12.315061 [info ] [MainThread]: Using profiles dir at /Users/alvarovilaplana/.dbt
+[0m13:58:12.315327 [info ] [MainThread]: Using profiles.yml file at /Users/alvarovilaplana/.dbt/profiles.yml
+[0m13:58:12.315475 [info ] [MainThread]: Using dbt_project.yml file at /Users/alvarovilaplana/projects/seventh_art_analytics/transform/dbt_project.yml
+[0m13:58:12.315627 [info ] [MainThread]: adapter type: spark
+[0m13:58:12.315753 [info ] [MainThread]: adapter version: 1.7.1
+[0m13:58:12.315889 [info ] [MainThread]: Configuration:
+[0m13:58:12.316025 [info ] [MainThread]:   profiles.yml file [[32mOK found and valid[0m]
+[0m13:58:12.316149 [info ] [MainThread]:   dbt_project.yml file [[31mERROR not found[0m]
+[0m13:58:12.316272 [info ] [MainThread]: Required dependencies:
+[0m13:58:12.316468 [debug] [MainThread]: Executing "git --help"
+[0m13:58:12.327471 [debug] [MainThread]: STDOUT: "b"usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]\n           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]\n           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--bare]\n           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]\n           [--super-prefix=<path>] [--config-env=<name>=<envvar>]\n           <command> [<args>]\n\nThese are common Git commands used in various situations:\n\nstart a working area (see also: git help tutorial)\n   clone     Clone a repository into a new directory\n   init      Create an empty Git repository or reinitialize an existing one\n\nwork on the current change (see also: git help everyday)\n   add       Add file contents to the index\n   mv        Move or rename a file, a directory, or a symlink\n   restore   Restore working tree files\n   rm        Remove files from the working tree and from the index\n\nexamine the history and state (see also: git help revisions)\n   bisect    Use binary search to find the commit that introduced a bug\n   diff      Show changes between commits, commit and working tree, etc\n   grep      Print lines matching a pattern\n   log       Show commit logs\n   show      Show various types of objects\n   status    Show the working tree status\n\ngrow, mark and tweak your common history\n   branch    List, create, or delete branches\n   commit    Record changes to the repository\n   merge     Join two or more development histories together\n   rebase    Reapply commits on top of another base tip\n   reset     Reset current HEAD to the specified state\n   switch    Switch branches\n   tag       Create, list, delete or verify a tag object signed with GPG\n\ncollaborate (see also: git help workflows)\n   fetch     Download objects and refs from another repository\n   pull      Fetch from and integrate with another repository or a local branch\n   push      Update remote refs along with associated objects\n\n'git help -a' and 'git help -g' list available subcommands and some\nconcept guides. See 'git help <command>' or 'git help <concept>'\nto read about a specific subcommand or concept.\nSee 'git help git' for an overview of the system.\n""
+[0m13:58:12.327879 [debug] [MainThread]: STDERR: "b''"
+[0m13:58:12.328058 [info ] [MainThread]:  - git [[32mOK found[0m]
+
+[0m13:58:12.328226 [info ] [MainThread]: Connection:
+[0m13:58:12.328402 [info ] [MainThread]:   host: localhost
+[0m13:58:12.328549 [info ] [MainThread]:   port: 10000
+[0m13:58:12.328689 [info ] [MainThread]:   cluster: None
+[0m13:58:12.328820 [info ] [MainThread]:   endpoint: None
+[0m13:58:12.328940 [info ] [MainThread]:   schema: bronze
+[0m13:58:12.329069 [info ] [MainThread]:   organization: 0
+[0m13:58:12.329308 [info ] [MainThread]: Registered adapter: spark=1.7.1
+[0m13:58:12.333169 [debug] [MainThread]: Acquiring new spark connection 'debug'
+[0m13:58:12.333766 [debug] [MainThread]: Using spark connection "debug"
+[0m13:58:12.333934 [debug] [MainThread]: On debug: select 1 as id
+[0m13:58:12.334074 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m13:58:12.979630 [debug] [MainThread]: Spark adapter: Error while running:
+select 1 as id
+[0m13:58:12.979975 [debug] [MainThread]: Spark adapter: Database Error
+  failed to connect
+[0m13:58:12.980250 [info ] [MainThread]:   Connection test: [[31mERROR[0m]
+
+[0m13:58:12.980460 [info ] [MainThread]: [31m2 checks failed:[0m
+[0m13:58:12.980597 [info ] [MainThread]: Project loading failed for the following reason:
+ project path </Users/alvarovilaplana/projects/seventh_art_analytics/transform/dbt_project.yml> not found
+
+[0m13:58:12.980733 [info ] [MainThread]: dbt was unable to connect to the specified database.
+The database returned the following error:
+
+  >Runtime Error
+  Database Error
+    failed to connect
+
+Check your database credentials and try again. For more information, visit:
+https://docs.getdbt.com/docs/configure-your-profile
+
+
+[0m13:58:12.982447 [debug] [MainThread]: Connection 'debug' was properly closed.
+[0m13:58:12.982724 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1023d5bd0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x110c3ec50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105ada9d0>]}
+[0m13:58:12.982955 [debug] [MainThread]: Flushing usage events

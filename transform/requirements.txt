@@ -1,7 +1,0 @@
-dbt-core==1.7.9
-dbt-spark==1.7.1
-pyspark==3.5.5
-pyhive==0.6.4
-thrift==0.22.0
-thrift_sasl==0.4.3
-pure-sasl==0.6.2
