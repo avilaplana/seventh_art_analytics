@@ -27,6 +27,19 @@ RUN curl -L "https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-
     ln -s /opt/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark
 ENV PATH="/opt/spark/bin:$PATH"
 
+# Download Iceberg runtime jars
+RUN mkdir -p /opt/spark/jars && \
+    curl -L -o /opt/spark/jars/iceberg-spark-runtime-3.5_2.12-1.8.1.jar \
+      https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-3.5_2.12/1.8.1/iceberg-spark-runtime-3.5_2.12-1.8.1.jar && \
+    curl -L -o /opt/spark/jars/iceberg-aws-1.8.1.jar \
+      https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-aws/1.8.1/iceberg-aws-1.8.1.jar && \
+    curl -L -o /opt/spark/jars/hadoop-aws-3.3.4.jar \
+      https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar && \
+    curl -L -o /opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar \
+      https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
+
+ENV SPARK_CLASSPATH=/opt/spark/jars/*
+
 # Create a non-root user
 RUN useradd -ms /bin/bash dbt
 USER dbt
