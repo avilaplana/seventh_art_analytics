@@ -4,6 +4,7 @@ medallion:
     dev:
       type: spark
       method: session
+      host: localhost   # required by dbt validation
       master: spark://spark-iceberg:7077
       schema: bronze
       catalog: demo
@@ -19,8 +20,5 @@ medallion:
         spark.hadoop.fs.s3a.access.key: admin
         spark.hadoop.fs.s3a.secret.key: password
         spark.hadoop.fs.s3.impl: org.apache.hadoop.fs.s3a.S3AFileSystem
-      packages:
-        - org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.8.1
-        - org.apache.iceberg:iceberg-aws:1.8.1
-        - org.apache.hadoop:hadoop-aws:3.3.4
-        - com.amazonaws:aws-java-sdk-bundle:1.12.262
+        # <-- add this
+        spark.jars: file:///opt/spark/jars/iceberg-spark-runtime-3.5_2.12-1.8.1.jar,file:///opt/spark/jars/iceberg-aws-1.8.1.jar,file:///opt/spark/jars/hadoop-aws-3.3.4.jar,file:///opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar
