@@ -40,6 +40,8 @@ RUN mkdir -p /opt/spark/jars && \
 
 ENV SPARK_CLASSPATH=/opt/spark/jars/*
 
+ENV PYSPARK_SUBMIT_ARGS="--jars /opt/spark/jars/iceberg-spark-runtime-3.5_2.12-1.8.1.jar,/opt/spark/jars/iceberg-aws-1.8.1.jar,/opt/spark/jars/hadoop-aws-3.3.4.jar,/opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar pyspark-shell"
+
 # Create a non-root user
 RUN useradd -ms /bin/bash dbt
 USER dbt
