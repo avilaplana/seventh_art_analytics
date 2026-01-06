@@ -57,6 +57,10 @@ ENV PATH=/home/dbt/.local/bin:$PATH
 # Copy dbt profiles
 COPY docker/profiles.yml /home/dbt/.dbt/profiles.yml
 
+# --- Spark defaults (THIS IS THE FIX) ---
+COPY docker/spark-defaults.conf /opt/spark/conf/spark-defaults.conf
+ENV SPARK_HOME=/opt/spark
+
 # Mount point for your project
 VOLUME ["/home/dbt/medallion"]
 WORKDIR /home/dbt/medallion
