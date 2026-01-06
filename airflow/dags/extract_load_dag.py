@@ -74,7 +74,7 @@ with DAG(
         --conf spark.sql.catalog.demo.warehouse=s3a://warehouse/ \\
         --conf spark.sql.defaultCatalog=demo \\
         --conf spark.hadoop.fs.s3a.endpoint=http://minio:9000 \\
-        --conf spark.sql.s3a.path.style.access=true \\
+        --conf spark.hadoop.fs.s3a.path.style.access=true \\
         --conf spark.hadoop.fs.s3a.access.key=admin \\
         --conf spark.hadoop.fs.s3a.secret.key=password \\
         --conf spark.hadoop.fs.s3.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \\

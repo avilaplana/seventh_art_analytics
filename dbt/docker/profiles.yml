@@ -10,9 +10,10 @@ medallion:
       catalog: demo
       spark_conf:        
         spark.hadoop.fs.s3a.endpoint: http://minio:9000
-        spark.sql.s3a.path.style.access: true
+        spark.hadoop.fs.s3a.path.style.access: true
         spark.hadoop.fs.s3a.access.key: admin
         spark.hadoop.fs.s3a.secret.key: password
+        spark.hadoop.fs.s3a.connection.ssl.enabled: false
         spark.hadoop.fs.s3.impl: org.apache.hadoop.fs.s3a.S3AFileSystem
         # <-- add this
         spark.jars: file:///opt/spark/jars/iceberg-spark-runtime-3.5_2.12-1.8.1.jar,file:///opt/spark/jars/iceberg-aws-1.8.1.jar,file:///opt/spark/jars/hadoop-aws-3.3.4.jar,file:///opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar
