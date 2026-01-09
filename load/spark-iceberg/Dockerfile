@@ -8,3 +8,4 @@ ADD https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.1026/a
 RUN ls -lh /opt/spark/jars/hadoop-aws-*.jar /opt/spark/jars/aws-java-sdk-bundle-*.jar
 
 COPY core-site.xml /opt/spark/conf/core-site.xml
+COPY spark-defaults.conf /opt/spark/conf/spark-defaults.conf
