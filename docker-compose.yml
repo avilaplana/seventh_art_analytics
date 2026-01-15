@@ -3,7 +3,9 @@ version: "3"
 services:
   # ---------- Spark + Iceberg ----------
   spark-iceberg:
-    build: ./load/spark-iceberg
+    build:
+      context: .
+      dockerfile: ./load/docker/Dockerfile
     container_name: spark-iceberg
     networks:
       iceberg_net:

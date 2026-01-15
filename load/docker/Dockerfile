@@ -7,5 +7,5 @@ ADD https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.1026/a
 # Optional: verify they’re present
 RUN ls -lh /opt/spark/jars/hadoop-aws-*.jar /opt/spark/jars/aws-java-sdk-bundle-*.jar
 
-COPY core-site.xml /opt/spark/conf/core-site.xml
-COPY spark-defaults.conf /opt/spark/conf/spark-defaults.conf
+COPY load/docker/core-site.xml /opt/spark/conf/core-site.xml
+COPY load/docker/spark-defaults.conf /opt/spark/conf/spark-defaults.conf

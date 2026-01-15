@@ -36,7 +36,7 @@ RUN curl -L -o /opt/spark/jars/iceberg-aws-bundle-1.8.1.jar \
 
 
 # Optional: copy your core-site.xml for S3 access
-COPY ../../load/spark-iceberg/core-site.xml /opt/spark/conf/core-site.xml
+COPY load/docker/core-site.xml /opt/spark/conf/core-site.xml
 # Copy requirements.txt FROM CORRECT CONTEXT PATH
 
 USER airflow
