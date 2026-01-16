@@ -55,12 +55,12 @@ with DAG(
     EXTRACT_SCRIPT_DIR = "/opt/airflow/extract/src/"
     extract_scripts = [
         "extract_name_basics_to_s3",
-        "extract_title_akas_to_s3",
-        "extract_title_basics_to_s3",
-        "extract_title_crew_to_s3",
-        "extract_title_episode_to_s3",
-        "extract_title_principals_to_s3",
-        "extract_title_ratings_to_s3"
+        # "extract_title_akas_to_s3",
+        # "extract_title_basics_to_s3",
+        # "extract_title_crew_to_s3",
+        # "extract_title_episode_to_s3",
+        # "extract_title_principals_to_s3",
+        # "extract_title_ratings_to_s3"
         ]
 
     extract_tasks = []
@@ -79,12 +79,12 @@ with DAG(
     pyspark_jobs = [
         "create_tables",
         "load_to_iceberg_name_basics",
-        "load_to_iceberg_title_akas",
-        "load_to_iceberg_title_basics",
-        "load_to_iceberg_title_crew",
-        "load_to_iceberg_title_episode",
-        "load_to_iceberg_title_principals",
-        "load_to_iceberg_title_ratings"
+        # "load_to_iceberg_title_akas",
+        # "load_to_iceberg_title_basics",
+        # "load_to_iceberg_title_crew",
+        # "load_to_iceberg_title_episode",
+        # "load_to_iceberg_title_principals",
+        # "load_to_iceberg_title_ratings"
         ]
     spark_tasks = []
     
@@ -98,4 +98,6 @@ with DAG(
         spark_tasks.append(spark_task)
 
     # Step 3: Set dependencies (extract -> Spark jobs sequentially)
-    extract_tasks >> spark_tasks[0] >> spark_tasks[1] >> spark_tasks[2] >> spark_tasks[3] >> spark_tasks[4] >> spark_tasks[5] >> spark_tasks[6] >> spark_tasks[7]
+    extract_tasks >> spark_tasks[0] >> spark_tasks[1] 
+    # >> spark_tasks[2] >> spark_tasks[3] >> spark_tasks[4] >> spark_tasks[5] >> spark_tasks[6] >> spark_tasks[7]
+    
