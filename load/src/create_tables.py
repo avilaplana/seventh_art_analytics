@@ -5,6 +5,9 @@ spark = SparkSession.builder \
     .appName("create-tables-Iceberg-MinIO") \
     .getOrCreate()
 
+# Create Iceberg Tables
+spark.sql("""CREATE NAMESPACE IF NOT EXISTS default""")
+
 # Drop tables
 spark.sql("""DROP TABLE IF EXISTS demo.bronze.name_basics""")
 spark.sql("""DROP TABLE IF EXISTS demo.bronze.title_akas""")
