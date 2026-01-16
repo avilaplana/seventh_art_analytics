@@ -17,10 +17,10 @@ ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Install Spark (same version as your Spark standalone cluster)
-ENV SPARK_VERSION=3.5.5
+ENV SPARK_VERSION=3.5.1
 ENV SPARK_MAJOR_VERSION=3.5
 ENV HADOOP_VERSION=3
-ENV ICEBERG_VERSION=1.8.1
+ENV ICEBERG_VERSION=1.5.0
 
 RUN curl -L "https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" \
     | tar -xz -C /opt/ && \

@@ -28,8 +28,8 @@ spark-submit \
 --conf spark.driver.extraJavaOptions="-Daws.region=eu-west-2" \
 --conf spark.executor.extraJavaOptions="-Daws.region=eu-west-2" \
 --packages \
-org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.8.1,\
-org.apache.iceberg:iceberg-aws:1.8.1,\
+org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0,\
+org.apache.iceberg:iceberg-aws:1.5.0,\
 org.apache.hadoop:hadoop-aws:3.3.4,\
 com.amazonaws:aws-java-sdk-bundle:1.12.262 \
 {job}
@@ -56,12 +56,12 @@ with DAG(
     EXTRACT_SCRIPT_DIR = "/opt/airflow/extract/src/"
     extract_scripts = [
         "extract_name_basics_to_s3",
-        "extract_title_akas_to_s3",
-        "extract_title_basics_to_s3",
-        "extract_title_crew_to_s3",
-        "extract_title_episode_to_s3",
-        "extract_title_principals_to_s3",
-        "extract_title_ratings_to_s3"
+        # "extract_title_akas_to_s3",
+        # "extract_title_basics_to_s3",
+        # "extract_title_crew_to_s3",
+        # "extract_title_episode_to_s3",
+        # "extract_title_principals_to_s3",
+        # "extract_title_ratings_to_s3"
         ]
 
     extract_tasks = []
@@ -79,12 +79,12 @@ with DAG(
     SPARK_JOBS_DIR = "/opt/airflow/load/src/"
     pyspark_jobs = [
         "load_to_iceberg_name_basics",
-        "load_to_iceberg_title_akas",
-        "load_to_iceberg_title_basics",
-        "load_to_iceberg_title_crew",
-        "load_to_iceberg_title_episode",
-        "load_to_iceberg_title_principals",
-        "load_to_iceberg_title_ratings"
+        # "load_to_iceberg_title_akas",
+        # "load_to_iceberg_title_basics",
+        # "load_to_iceberg_title_crew",
+        # "load_to_iceberg_title_episode",
+        # "load_to_iceberg_title_principals",
+        # "load_to_iceberg_title_ratings"
         ]
     spark_tasks = []
     
@@ -98,4 +98,5 @@ with DAG(
         spark_tasks.append(spark_task)
 
     # Step 3: Set dependencies (extract -> Spark jobs sequentially)
-    extract_tasks >> spark_tasks[0] >> spark_tasks[1] >> spark_tasks[2] >> spark_tasks[3] >> spark_tasks[4] >> spark_tasks[5] >> spark_tasks[6]
+    extract_tasks >> spark_tasks[0] 
+    # >> spark_tasks[1] >> spark_tasks[2] >> spark_tasks[3] >> spark_tasks[4] >> spark_tasks[5] >> spark_tasks[6]

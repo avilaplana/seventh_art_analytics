@@ -1,4 +1,4 @@
-FROM tabulario/spark-iceberg:3.5.5_1.8.1
+FROM tabulario/spark-iceberg:3.5.1_1.5.0
 
 # Add Hadoop AWS + AWS SDK jars (versions must match Hadoop in the base image, likely 3.3.x)
 ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar /opt/spark/jars/
