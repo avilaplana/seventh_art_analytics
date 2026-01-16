@@ -5,8 +5,37 @@ from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
 import sys
 
-# Add extract src dir to path
+def build_spark_submit(job):
+    return f"""\
+spark-submit \
+--master spark://spark-iceberg:7077 \
+--deploy-mode client \
+--conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
+--conf spark.sql.defaultCatalog=demo \
+--conf spark.sql.catalog.demo=org.apache.iceberg.spark.SparkCatalog \
+--conf spark.sql.catalog.demo.catalog-impl=org.apache.iceberg.rest.RESTCatalog \
+--conf spark.sql.catalog.demo.uri=http://rest:8181 \
+--conf spark.sql.catalog.demo.warehouse=s3://warehouse/ \
+--conf spark.sql.catalog.demo.io-impl=org.apache.iceberg.aws.s3.S3FileIO \
+--conf spark.sql.catalog.demo.s3.endpoint=http://minio:9000 \
+--conf spark.sql.catalog.demo.s3.path-style-access=true \
+--conf spark.sql.catalog.demo.s3.access-key-id=admin \
+--conf spark.sql.catalog.demo.s3.secret-access-key=password \
+--conf spark.hadoop.fs.s3a.endpoint=http://minio:9000 \
+--conf spark.hadoop.fs.s3a.path.style.access=true \
+--conf spark.hadoop.fs.s3a.access.key=admin \
+--conf spark.hadoop.fs.s3a.secret.key=password \
+--conf spark.driver.extraJavaOptions="-Daws.region=eu-west-2" \
+--conf spark.executor.extraJavaOptions="-Daws.region=eu-west-2" \
+--packages \
+org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.8.1,\
+org.apache.iceberg:iceberg-aws:1.8.1,\
+org.apache.hadoop:hadoop-aws:3.3.4,\
+com.amazonaws:aws-java-sdk-bundle:1.12.262 \
+{job}
+"""
 
+# Add extract src dir to path
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
@@ -62,29 +91,9 @@ with DAG(
     for job in pyspark_jobs:
         spark_task_id = f"spark_{job}"
         spark_task = BashOperator(
+            retries=0,          # fail fast on Spark job
             task_id=spark_task_id,
-            bash_command=f"""spark-submit \\
-        --master spark://spark-iceberg:7077 \\
-        --deploy-mode client \\
-        --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \\
-        --conf spark.sql.defaultCatalog=demo \\
-        --conf spark.sql.catalog.demo=org.apache.iceberg.spark.SparkCatalog \\
-        --conf spark.sql.catalog.demo.catalog-impl=org.apache.iceberg.rest.RESTCatalog \\
-        --conf spark.sql.catalog.demo.uri=http://rest:8181 \\
-        --conf spark.sql.catalog.demo.warehouse=s3://warehouse/ \\
-        --conf spark.sql.catalog.demo.io-impl=org.apache.iceberg.aws.s3.S3FileIO \\
-        --conf spark.sql.catalog.demo.s3.endpoint=http://minio:9000 \\
-        --conf spark.sql.catalog.demo.s3.path-style-access=true \\
-        --conf spark.sql.catalog.demo.s3.access-key-id=admin \\
-        --conf spark.sql.catalog.demo.s3.secret-access-key=password \\
-        --conf spark.hadoop.fs.s3a.endpoint=http://minio:9000 \\
-        --conf spark.hadoop.fs.s3a.path.style.access=true \\
-        --conf spark.hadoop.fs.s3a.access.key=admin \\
-        --conf spark.hadoop.fs.s3a.secret.key=password \\
-        --conf spark.driver.extraJavaOptions="-Daws.region=eu-west-2" \\
-        --conf spark.executor.extraJavaOptions="-Daws.region=eu-west-2" \\
-        --packages org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.8.1,org.apache.iceberg:iceberg-aws:1.8.1,org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262 \\
-        {SPARK_JOBS_DIR}{job}.py""",  
+            bash_command=build_spark_submit(f"{SPARK_JOBS_DIR}{job}.py")
         )
         spark_tasks.append(spark_task)
 
