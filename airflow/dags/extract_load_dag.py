@@ -78,6 +78,7 @@ with DAG(
     # Directory containing Spark job scripts
     SPARK_JOBS_DIR = "/opt/airflow/load/src/"
     pyspark_jobs = [
+        "create_tables",
         "load_to_iceberg_name_basics",
         "load_to_iceberg_title_akas",
         "load_to_iceberg_title_basics",
@@ -98,4 +99,4 @@ with DAG(
         spark_tasks.append(spark_task)
 
     # Step 3: Set dependencies (extract -> Spark jobs sequentially)
-    extract_tasks >> spark_tasks[0] >> spark_tasks[1] >> spark_tasks[2] >> spark_tasks[3] >> spark_tasks[4] >> spark_tasks[5] >> spark_tasks[6]
+    extract_tasks >> spark_tasks[0] >> spark_tasks[1] >> spark_tasks[2] >> spark_tasks[3] >> spark_tasks[4] >> spark_tasks[5] >> spark_tasks[6] >> spark_tasks[7]
