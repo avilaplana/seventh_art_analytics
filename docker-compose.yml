@@ -2,6 +2,7 @@ version: "3"
 
 services:
   spark-master:
+    image: custom-spark-iceberg:latest
     build:
       context: .
       dockerfile: ./load/docker/Dockerfile
@@ -25,9 +26,7 @@ services:
       iceberg_net:
 
   spark-worker-1:
-    build:
-      context: .
-      dockerfile: ./load/docker/Dockerfile
+    image: custom-spark-iceberg:latest
     container_name: "spark-worker-1"
     environment:
       - AWS_ACCESS_KEY_ID=admin
@@ -48,9 +47,7 @@ services:
       iceberg_net:
 
   spark-worker-2:
-    build:
-      context: .
-      dockerfile: ./load/docker/Dockerfile
+    image: custom-spark-iceberg:latest
     container_name: "spark-worker-2"
     environment:
       - AWS_ACCESS_KEY_ID=admin
@@ -71,9 +68,7 @@ services:
       iceberg_net:
 
   spark-thrift-server:
-    build:
-      context: .
-      dockerfile: ./load/docker/Dockerfile
+    image: custom-spark-iceberg:latest
     container_name: "spark-thrift-server"
     depends_on:
       - spark-master
@@ -183,6 +178,7 @@ services:
       iceberg_net:
 
   airflow-webserver:
+    image: custom-airflow:latest
     build:
       context: .
       dockerfile: ./airflow/docker/Dockerfile
@@ -198,7 +194,6 @@ services:
       SECRET_KEY: password
       REGION: eu-west-2
       # AIRFLOW_CONN_SPARK_DEFAULT: 'spark://spark-iceberg:7077'
-
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./extract/src:/opt/airflow/extract/src
@@ -213,9 +208,7 @@ services:
       iceberg_net:
 
   airflow-scheduler:
-    build:
-      context: .
-      dockerfile: ./airflow/docker/Dockerfile
+    image: custom-airflow:latest
     depends_on:
       - airflow-webserver
     environment:
