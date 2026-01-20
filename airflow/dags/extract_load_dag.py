@@ -8,7 +8,7 @@ import sys
 def build_spark_submit(job):
     return f"""\
 spark-submit \
---master spark://spark-iceberg:7077 \
+--master spark://spark-master:7077 \
 --deploy-mode client \
 --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
 --conf spark.sql.defaultCatalog=demo \
@@ -28,10 +28,9 @@ spark-submit \
 --conf spark.driver.extraJavaOptions="-Daws.region=eu-west-2" \
 --conf spark.executor.extraJavaOptions="-Daws.region=eu-west-2" \
 --packages \
-org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.8.1,\
-org.apache.iceberg:iceberg-aws:1.8.1,\
-org.apache.hadoop:hadoop-aws:3.3.4,\
-com.amazonaws:aws-java-sdk-bundle:1.12.262 \
+org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.8.0,\
+org.apache.iceberg:iceberg-aws-bundle:1.8.0,\
+org.apache.hadoop:hadoop-aws:3.3.4 \
 {job}
 """
 

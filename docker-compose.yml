@@ -1,30 +1,123 @@
 version: "3"
 
 services:
-  # ---------- Spark + Iceberg ----------
-  spark-iceberg:
+  spark-master:
     build:
       context: .
       dockerfile: ./load/docker/Dockerfile
-    container_name: spark-iceberg
-    networks:
-      iceberg_net:
+    container_name: "spark-master"
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password
+      - AWS_REGION=eu-west-2
     depends_on:
       - rest
       - minio
-    volumes:
-      - ./load/notebooks:/home/iceberg/notebooks/notebooks
+    ports:
+      - "8080:8080"
+    networks:
+      iceberg_net:
+
+  spark-worker-1:
+    build:
+      context: .
+      dockerfile: ./load/docker/Dockerfile
+    container_name: "spark-worker-1"
     environment:
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_REGION=eu-west-2
-      - SPARK_SUBMIT_OPTS=-Dspark.sql.catalogImplementation=hive
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
+    depends_on:
+      - spark-master
+    networks:
+      iceberg_net:
+
+  spark-worker-2:
+    build:
+      context: .
+      dockerfile: ./load/docker/Dockerfile
+    container_name: "spark-worker-2"
+    environment:
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password
+      - AWS_REGION=eu-west-2    
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
+    depends_on:
+      - spark-master
+    networks:
+      iceberg_net:
+
+  spark-thrift-server:
+    build:
+      context: .
+      dockerfile: ./load/docker/Dockerfile
+    container_name: "spark-thrift-server"
+    depends_on:
+      - spark-master
     ports:
-      - 8888:8888
-      - 8080:8080
-      - 10000:10000
-      - 10001:10001
-      - 4040-4042:4040-4042
+      - "4040:4040"
+      - "10000:10000"
+    command: sh -c "
+      sleep 30 &&
+      ./sbin/start-thriftserver.sh --master spark://spark-master:7077 \
+      --conf spark.sql.catalog.demo.s3.access-key-id=admin \
+      --conf spark.sql.catalog.demo.s3.secret-access-key=password \
+      --conf spark.driver.extraJavaOptions="-Daws.region=eu-west-2" \ 
+      --conf spark.executor.extraJavaOptions="-Daws.region=eu-west-2" \
+      --conf spark.executor.cores=1 \
+      --conf spark.cores.max=1 \
+      --conf spark.executor.memory=1G \
+      --conf spark.driver.memory=1G" 
+    networks:
+      - iceberg_net
+
+  # ---------- Spark + Iceberg ----------
+  # spark-iceberg:
+  #   build:
+  #     context: .
+  #     dockerfile: ./load/docker/Dockerfile
+  #   container_name: spark-iceberg
+  #   networks:
+  #     iceberg_net:
+  #   depends_on:
+  #     - rest
+  #     - minio
+  #   volumes:
+  #     - ./load/notebooks:/home/iceberg/notebooks/notebooks
+  #   environment:
+  #     - AWS_ACCESS_KEY_ID=admin
+  #     - AWS_SECRET_ACCESS_KEY=password
+  #     - AWS_REGION=eu-west-2
+  #     - SPARK_SUBMIT_OPTS=-Dspark.sql.catalogImplementation=hive
+  #   ports:
+  #     - 8888:8888
+  #     - 8080:8080
+  #     - 10000:10000
+  #     - 10001:10001
+  #     - 4040-4042:4040-4042
 
   rest:
     image: tabulario/iceberg-rest
