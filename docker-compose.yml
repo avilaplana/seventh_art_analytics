@@ -193,11 +193,13 @@ services:
       ACCESS_KEY: admin
       SECRET_KEY: password
       REGION: eu-west-2
+      PROJECTS_DIR: ${PROJECTS_DIR}
       # AIRFLOW_CONN_SPARK_DEFAULT: 'spark://spark-iceberg:7077'
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./extract/src:/opt/airflow/extract/src
       - ./load/src:/opt/airflow/load/src
+      - /var/run/docker.sock:/var/run/docker.sock
     command: >
       bash -c "airflow db upgrade &&
                airflow users create --username admin --password admin --firstname a --lastname d --role Admin --email admin@example.com || true &&
@@ -219,11 +221,13 @@ services:
       ACCESS_KEY: admin
       SECRET_KEY: password
       REGION: eu-west-2
+      PROJECTS_DIR: ${PROJECTS_DIR}
       # AIRFLOW_CONN_SPARK_DEFAULT: 'spark://spark-iceberg:7077'
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./extract/src:/opt/airflow/extract/src
       - ./load/src:/opt/airflow/load/src
+      - /var/run/docker.sock:/var/run/docker.sock
     command: >
       bash -c "sleep 10 && airflow scheduler"
     networks:

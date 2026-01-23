@@ -1,9 +1,14 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.providers.docker.operators.docker import DockerOperator
+from docker.types import Mount
+
+
 
 from datetime import datetime, timedelta
 import sys
+import os
 
 def build_spark_submit(job):
     return f"""\
@@ -97,7 +102,27 @@ with DAG(
         )
         spark_tasks.append(spark_task)
 
+    projects_dir = os.environ["PROJECTS_DIR"]
+
+    dbt_silver_layer = DockerOperator(
+        task_id="data_modelling_silver_layer",
+        image="dbt-spark:f5bf2ec",
+        command="build --profiles-dir /usr/app/dbt --target local --project-dir /usr/app/dbt/silver",
+        mounts=[
+                Mount(
+                    source=f"{projects_dir}/seventh_art_analytics/dbt",
+                    target="/usr/app/dbt",
+                    type="bind",
+                )
+            ],
+        network_mode="seventh_art_analytics_iceberg_net",
+        docker_url="unix://var/run/docker.sock",
+        auto_remove=True,
+        tty=True,
+        mount_tmp_dir=False,
+    )
+        
     # Step 3: Set dependencies (extract -> Spark jobs sequentially)
-    extract_tasks >> spark_tasks[0] >> spark_tasks[1] 
+    extract_tasks >> spark_tasks[0] >> spark_tasks[1] >> dbt_silver_layer
     # >> spark_tasks[2] >> spark_tasks[3] >> spark_tasks[4] >> spark_tasks[5] >> spark_tasks[6] >> spark_tasks[7]
     
