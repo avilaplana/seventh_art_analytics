@@ -96,6 +96,12 @@ services:
       - CATALOG_WAREHOUSE=s3://warehouse/
       - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
       - CATALOG_S3_ENDPOINT=http://minio:9000
+      - CATALOG_URI=jdbc:postgresql://postgres:5432/catalog_metadata
+      - CATALOG_JDBC_USER=iceberg
+      - CATALOG_JDBC_PASSWORD=iceberg
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   minio:
     image: minio/minio
@@ -137,13 +143,21 @@ services:
   postgres:
     image: postgres:14
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_db_volume:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       iceberg_net:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U postgres -p 5432 || exit 1"]
+      interval: 5s       # how often to run the check
+      timeout: 3s        # fail if check takes longer
+      retries: 10        # how many times to retry before unhealthy
+      start_period: 10s  # give Postgres some time to boot
 
   airflow-webserver:
     image: custom-airflow:latest
@@ -151,7 +165,8 @@ services:
       context: .
       dockerfile: ./airflow/docker/Dockerfile
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
