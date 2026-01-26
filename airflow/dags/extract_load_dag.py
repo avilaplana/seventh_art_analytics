@@ -110,7 +110,7 @@ with DAG(
         command="build --profiles-dir /usr/app/dbt --target local --project-dir /usr/app/dbt/silver",
         mounts=[
                 Mount(
-                    source=f"{projects_dir}/seventh_art_analytics/dbt",
+                    source=f"{projects_dir}/seventh_art_analytics/transform",
                     target="/usr/app/dbt",
                     type="bind",
                 )

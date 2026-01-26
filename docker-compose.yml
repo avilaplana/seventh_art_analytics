@@ -16,7 +16,28 @@ x-spark-env: &spark-env
   SPARK_SSL_ENABLED: "no"
   SPARK_USER: spark
 
+x-airflow-image: &airflow-image
+  image: custom-airflow:latest
+  build:
+    context: .
+    dockerfile: ./airflow/docker/Dockerfile
+
+x-airflow-env: &airflow-env
+  AIRFLOW__CORE__EXECUTOR: LocalExecutor
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+  AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+  AIRFLOW__WEBSERVER__SECRET_KEY: "b7c51d01e7c447d88a07de15efbf14cd"
+  S3_ENDPOINT: http://minio:9000
+  ACCESS_KEY: admin
+  SECRET_KEY: password
+  REGION: eu-west-2
+  PROJECTS_DIR: ${PROJECTS_DIR}
+
 services:
+
+###########################################################################
+# ---------- Spark Standalone cluster with 1 master and 2 workers ---------
+###########################################################################
   spark-master:
     <<: *spark-image
     container_name: spark-master
@@ -59,6 +80,9 @@ services:
     networks:
       - iceberg_net
 
+###########################################################################
+# ---------- Spark Thrift Server to allow JDBC/ODBC connections -----------
+###########################################################################
   spark-thrift-server:
     <<: *spark-image
     container_name: spark-thrift-server
@@ -82,6 +106,10 @@ services:
     networks:
       - iceberg_net
   
+###########################################################################
+# ---------- Iceberg Rest Server with Postgres as metadata store ---------- 
+###########################################################################
+
   rest:
     image: tabulario/iceberg-rest
     container_name: iceberg-rest
@@ -103,6 +131,9 @@ services:
       postgres:
         condition: service_healthy
 
+#####################################################
+# ---------- Minio (S3-compatible storage) ----------
+#####################################################
   minio:
     image: minio/minio
     container_name: minio
@@ -139,9 +170,12 @@ services:
       tail -f /dev/null
       "
 
-  # ---------- Airflow stack ----------
+###############################################################################
+# ---------- Database with 2 databases: airflow and catalog_metadata ----------
+###############################################################################
   postgres:
     image: postgres:14
+    container_name: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -159,25 +193,17 @@ services:
       retries: 10        # how many times to retry before unhealthy
       start_period: 10s  # give Postgres some time to boot
 
+#####################################
+# ---------- Airflow stack ----------
+#####################################
   airflow-webserver:
-    image: custom-airflow:latest
-    build:
-      context: .
-      dockerfile: ./airflow/docker/Dockerfile
+    <<: *airflow-image
+    container_name: airflow-webserver
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__WEBSERVER__SECRET_KEY: "b7c51d01e7c447d88a07de15efbf14cd"
-      S3_ENDPOINT: http://minio:9000
-      ACCESS_KEY: admin
-      SECRET_KEY: password
-      REGION: eu-west-2
-      PROJECTS_DIR: ${PROJECTS_DIR}
-      # AIRFLOW_CONN_SPARK_DEFAULT: 'spark://spark-iceberg:7077'
+      <<: *airflow-env  
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./extract/src:/opt/airflow/extract/src
@@ -193,19 +219,12 @@ services:
       iceberg_net:
 
   airflow-scheduler:
-    image: custom-airflow:latest
+    <<: *airflow-image
+    container_name: airflow-scheduler
     depends_on:
       - airflow-webserver
     environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__WEBSERVER__SECRET_KEY: "b7c51d01e7c447d88a07de15efbf14cd"
-      S3_ENDPOINT: http://minio:9000
-      ACCESS_KEY: admin
-      SECRET_KEY: password
-      REGION: eu-west-2
-      PROJECTS_DIR: ${PROJECTS_DIR}
-      # AIRFLOW_CONN_SPARK_DEFAULT: 'spark://spark-iceberg:7077'
+      <<: *airflow-env      
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./extract/src:/opt/airflow/extract/src
