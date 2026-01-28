@@ -1,5 +1,0 @@
-# boto3: AWS SDK for Python (used to talk to S3 and S3-compatible services like MinIO)
-boto3>=1.34.0
-
-# requests: HTTP library for downloading the .gz file from a URL
-requests>=2.31.0
