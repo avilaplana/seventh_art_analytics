@@ -5,8 +5,8 @@ import os
 import requests
 
 S3_ENDPOINT = os.environ['S3_ENDPOINT']
-ACCESS_KEY = os.environ['ACCESS_KEY']
-SECRET_KEY = os.environ['SECRET_KEY']
+AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 REGION = os.environ['REGION']
 SOURCE_URL_PREFIX = "https://datasets.imdbws.com/"
 ROOT_BUCKET = "data"
@@ -48,8 +48,8 @@ def extract(raw_file):
     s3 = boto3.client(
         "s3",
         endpoint_url=S3_ENDPOINT,
-        aws_access_key_id=ACCESS_KEY,
-        aws_secret_access_key=SECRET_KEY,
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
         config=Config(signature_version="s3v4"),
         region_name=REGION,
     )

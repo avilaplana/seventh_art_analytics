@@ -1,0 +1,96 @@
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
+from airflow.providers.docker.operators.docker import DockerOperator
+from docker.types import Mount
+from spark_utils import build_spark_submit
+from datetime import datetime, timedelta
+import sys
+import os
+
+# Add extract src dir to path
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": False,
+    "retries": 1,
+    "retry_delay": timedelta(minutes=5),
+}
+
+with DAG(
+    "daily_test_etl_medallion",
+    default_args=default_args,
+    description="Extract to S3 -> Load to Iceberg (parallel Spark jobs)",
+    schedule_interval=None,
+    start_date=datetime(2025, 10, 1),
+    catchup=False,
+) as dag:
+
+    ##################################################
+    # Step 1: Extract all IMDB raw files to S3/MinIO #
+    ##################################################
+    EXTRACT_SCRIPT_DIR = "/opt/airflow/extract/src/"
+    extract_raw_scripts = [
+        "extract_name_basics_to_s3",
+        ]
+
+    extract_tasks = []
+    sys.path.append(EXTRACT_SCRIPT_DIR)
+
+    for script in extract_raw_scripts:
+        extract_task = PythonOperator(
+            task_id=f"{script}",
+            python_callable=lambda script=script: __import__(script).main(),
+        )
+        extract_tasks.append(extract_task)
+
+    ########################################################################
+    # Step 2: Load each raw file from S3/MinIO to Iceberg using Spark jobs #
+    ########################################################################
+    SPARK_JOBS_DIR = "/opt/airflow/load/src/"
+    load_bronze_jobs = [
+        "create_tables",
+        "load_to_iceberg_name_basics",
+        ]
+    spark_bronze_tasks = []
+
+    for job in load_bronze_jobs:
+        spark_task_id = f"SPARK_bronze_{job}"
+        spark_task = BashOperator(
+            retries=0,          # fail fast on Spark job
+            task_id=spark_task_id,
+            bash_command=build_spark_submit(f"{SPARK_JOBS_DIR}{job}.py")
+        )
+        spark_bronze_tasks.append(spark_task)
+
+    ############################################
+    # Step 3: Transform Medallion Silver layer #
+    ############################################
+    projects_dir = os.environ["PROJECTS_DIR"]
+
+    dbt_silver_command = """build 
+    --profiles-dir /usr/app/dbt 
+    --target local 
+    --project-dir /usr/app/dbt/silver
+    --select silver.person
+    """
+
+    dbt_silver_task = DockerOperator(
+        task_id="DBT_silver_layer",
+        image="dbt-spark:f5bf2ec",
+        command=dbt_silver_command,
+        mounts=[
+                Mount(
+                    source=f"{projects_dir}/seventh_art_analytics/transform",
+                    target="/usr/app/dbt",
+                    type="bind",
+                )
+            ],
+        network_mode="seventh_art_analytics_iceberg_net",
+        docker_url="unix://var/run/docker.sock",
+        auto_remove=True,
+        tty=True,
+        mount_tmp_dir=False,
+    )
+        
+    extract_tasks >> spark_bronze_tasks[0] >> spark_bronze_tasks[1:8] >> dbt_silver_task
+    
