@@ -22,3 +22,14 @@ models:
         tests:
           - not_null
           - unique
+  - name: role_person
+    columns:
+      - name: role_id
+        tests:
+          - not_null
+          - unique
+      - name: person_id
+        tests:
+          - not_null
+          - unique
+     
