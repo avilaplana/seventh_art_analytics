@@ -5,3 +5,4 @@ sources:
     schema: bronze
     tables:
       - name: name_basics
+      - name: title_principals

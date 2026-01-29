@@ -31,11 +31,11 @@ with DAG(
     EXTRACT_SCRIPT_DIR = "/opt/airflow/extract/src/"
     extract_raw_scripts = [
         "extract_name_basics_to_s3",
+        "extract_title_principals_to_s3",
         "extract_title_akas_to_s3",
         "extract_title_basics_to_s3",
         "extract_title_crew_to_s3",
         "extract_title_episode_to_s3",
-        "extract_title_principals_to_s3",
         "extract_title_ratings_to_s3"
         ]
 
