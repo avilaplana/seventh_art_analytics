@@ -22,3 +22,12 @@ models:
         tests:
           - not_null
           - unique
+  - name: role_person
+    columns:
+      - name: role_id
+        tests:
+          - not_null
+      - name: person_id
+        tests:
+          - not_null
+# Add unique the composite role_id, person_id with dbt-utils
