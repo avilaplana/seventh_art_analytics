@@ -31,3 +31,23 @@ models:
         tests:
           - not_null
 # Add unique the composite role_id, person_id with dbt-utils
+  - name: title_type
+    columns:
+      - name: title_type_id
+        tests:
+          - not_null
+          - unique
+      - name: title_type_name
+        tests:
+          - not_null
+          - unique
+  - name: genre
+    columns:
+      - name: genre_id
+        tests:
+          - not_null
+          - unique
+      - name: genre_name
+        tests:
+          - not_null
+          - unique

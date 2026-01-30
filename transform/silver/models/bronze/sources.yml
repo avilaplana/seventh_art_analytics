@@ -6,3 +6,4 @@ sources:
     tables:
       - name: name_basics
       - name: title_principals
+      - name: title_basics
