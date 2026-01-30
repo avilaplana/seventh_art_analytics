@@ -51,3 +51,23 @@ models:
         tests:
           - not_null
           - unique
+  - name: title
+    columns:
+      - name: title_id
+        tests:
+          - not_null
+          - unique
+      - name: title_type_id
+        tests:
+          - not_null
+      - name: primary_title
+        tests:
+          - not_null
+      - name: original_title
+        tests:
+          - not_null
+      - name: is_adult
+        tests:
+          - not_null
+      - name: release_year
+      - name: duration_minutes
