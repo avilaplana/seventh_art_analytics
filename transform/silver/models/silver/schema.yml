@@ -79,3 +79,15 @@ models:
       - name: title_id
         tests:
           - not_null
+  - name: title_person
+    columns:
+      - name: title_id
+        tests:
+          - not_null
+      - name: person_id
+        tests:
+          - not_null
+      - name: ordering
+        tests:
+          - not_null
+      - name: characters
