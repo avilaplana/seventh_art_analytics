@@ -71,3 +71,11 @@ models:
           - not_null
       - name: release_year
       - name: duration_minutes
+  - name: genre_title
+    columns:
+      - name: genre_id
+        tests:
+          - not_null
+      - name: title_id
+        tests:
+          - not_null
