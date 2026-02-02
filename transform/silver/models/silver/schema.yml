@@ -91,3 +91,14 @@ models:
         tests:
           - not_null
       - name: characters
+  - name: title_person_role
+    columns:
+      - name: role_id
+        tests:
+          - not_null
+      - name: title_id
+        tests:
+          - not_null
+      - name: person_id
+        tests:
+          - not_null
