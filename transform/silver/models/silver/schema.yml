@@ -87,18 +87,13 @@ models:
       - name: person_id
         tests:
           - not_null
-      - name: ordering
-        tests:
-          - not_null
-      - name: characters
-  - name: title_person_role
-    columns:
       - name: role_id
         tests:
           - not_null
-      - name: title_id
+      - name: job
+      - name: number_of_roles
         tests:
           - not_null
-      - name: person_id
+      - name: characters
         tests:
           - not_null
