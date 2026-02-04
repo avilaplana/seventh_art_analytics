@@ -7,3 +7,5 @@ sources:
       - name: name_basics
       - name: title_principals
       - name: title_basics
+      - name: title_ratings
+      - name: title_akas

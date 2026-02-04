@@ -71,6 +71,12 @@ models:
           - not_null
       - name: release_year
       - name: duration_minutes
+      - name: average_rating
+        tests:
+          - not_null
+      - name: number_of_votes
+        tests:
+          - not_null
   - name: genre_title
     columns:
       - name: genre_id
@@ -95,5 +101,58 @@ models:
         tests:
           - not_null
       - name: characters
+        tests:
+          - not_null
+  - name: region
+    columns:
+      - name: region_id
+        tests:
+          - not_null
+          - unique
+      - name: region_name
+        tests:
+          - not_null
+          - unique
+  - name: language
+    columns:
+      - name: language_id
+        tests:
+          - not_null
+          - unique
+      - name: language_name
+        tests:
+          - not_null
+          - unique
+  - name: attribute
+    columns:
+      - name: attribute_id
+        tests:
+          - not_null
+          - unique
+      - name: attribute_name
+        tests:
+          - not_null
+          - unique
+  - name: title_localized
+    columns:
+      - name: title_id
+        tests:
+          - not_null
+      - name: ordering
+        tests:
+          - not_null
+      - name: title
+        tests:
+          - not_null
+      - name: region_id
+        tests:
+          - not_null
+      - name: language_id
+        tests:
+          - not_null
+      - name: attribute_id
+        tests:
+          - not_null
+      - name: is_original_title
         tests:
           - not_null
