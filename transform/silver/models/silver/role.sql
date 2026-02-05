@@ -6,10 +6,13 @@ WITH roles_array AS (
 
 roles_distinct AS (
 SELECT
-    DISTINCT role
+    DISTINCT(
+            CASE
+                WHEN role = '\\N' OR role is NULL THEN 'UNKNOWN'
+                ELSE role
+            END) AS role
 FROM roles_array
 LATERAL VIEW explode(roles) t AS role
-WHERE role != '\\N'
 ORDER BY role ASC
 ), 
 
