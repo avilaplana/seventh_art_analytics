@@ -1,18 +1,20 @@
 WITH title_principals_cleaned AS (
   SELECT
-    tconst AS title_id,
-    nconst AS person_id,
-    category,
-    ordering,
+    tp.tconst AS title_id,
+    tp.nconst AS person_id,
+    tp.category,
+    tp.ordering,
     CASE
-      WHEN job = '\\N' THEN NULL
-      ELSE job
+      WHEN tp.job = '\\N' THEN NULL
+      ELSE tp.job
     END AS job,
     CASE
-      WHEN characters = '\\N' THEN 'NOT DEFINED'
-      ELSE TRIM(REPLACE(REPLACE(REPLACE(characters, '[', ''), ']', ''), '\"',''))
+      WHEN tp.characters = '\\N' THEN 'NOT DEFINED'
+      ELSE TRIM(REPLACE(REPLACE(REPLACE(tp.characters, '[', ''), ']', ''), '\"',''))
     END AS characters
-FROM {{ source ('bronze', 'title_principals') }}
+FROM {{ source ('bronze', 'title_principals') }} tp
+INNER JOIN {{ source ('bronze', 'name_basics') }} nb -- FILTER OUT persons that are not defined in name_basics
+ON tp.nconst = nb.nconst
 ),
 title_principals_with_map AS (
 SELECT
@@ -38,5 +40,5 @@ SELECT
     tpwm.number_of_roles,
     tpwm.characters
 FROM title_principals_with_map tpwm
-JOIN {{ ref('role') }} r
+INNER JOIN {{ ref('role') }} r
 ON tpwm.category = r.role_name

@@ -16,5 +16,5 @@ ORDER BY title_id, genre_name ASC
 
 SELECT tg.title_id, g.genre_id 
 FROM title_genre tg
-JOIN  {{ ref('genre') }} g
+INNER JOIN  {{ ref('genre') }} g
 ON tg.genre_name = g.genre_name

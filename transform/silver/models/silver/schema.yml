@@ -27,9 +27,16 @@ models:
       - name: role_id
         tests:
           - not_null
+          - relationships:
+              to: ref('role')
+              field: role_id
       - name: person_id
         tests:
           - not_null
+          - relationships:
+              to: ref('person')
+              field: person_id
+      - name: job
 # Add unique the composite role_id, person_id with dbt-utils
   - name: title_type
     columns:
@@ -60,6 +67,9 @@ models:
       - name: title_type_id
         tests:
           - not_null
+          - relationships:
+              to: ref('title_type')
+              field: title_type_id
       - name: primary_title
         tests:
           - not_null
@@ -82,20 +92,35 @@ models:
       - name: genre_id
         tests:
           - not_null
+          - relationships:
+              to: ref('genre')
+              field: genre_id
       - name: title_id
         tests:
           - not_null
+          - relationships:
+              to: ref('title')
+              field: title_id
   - name: title_person
     columns:
       - name: title_id
         tests:
           - not_null
+          - relationships:
+              to: ref('title')
+              field: title_id
       - name: person_id
         tests:
           - not_null
+          - relationships:
+              to: ref('person')
+              field: person_id
       - name: role_id
         tests:
           - not_null
+          - relationships:
+              to: ref('role')
+              field: role_id
       - name: job
       - name: number_of_roles
         tests:
@@ -138,6 +163,9 @@ models:
       - name: title_id
         tests:
           - not_null
+          - relationships:
+              to: ref('title')
+              field: title_id
       - name: title
         tests:
           - not_null
@@ -147,12 +175,21 @@ models:
       - name: region_id
         tests:
           - not_null
+          - relationships:
+              to: ref('region')
+              field: region_id
       - name: language_id
         tests:
           - not_null
+          - relationships:
+              to: ref('language')
+              field: language_id
       - name: attribute_id
         tests:
           - not_null
+          - relationships:
+              to: ref('attribute')
+              field: attribute_id
       - name: is_original_title
         tests:
           - not_null
