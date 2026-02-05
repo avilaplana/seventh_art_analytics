@@ -9,3 +9,4 @@ sources:
       - name: title_basics
       - name: title_ratings
       - name: title_akas
+      - name: title_episode
