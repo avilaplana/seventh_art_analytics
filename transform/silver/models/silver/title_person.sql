@@ -41,5 +41,5 @@ SELECT
     tpwm.number_of_roles,
     tpwm.characters
 FROM title_principals_with_map tpwm
-INNER JOIN {{ ref('role') }} r
+LEFT JOIN {{ ref('role') }} r
 ON tpwm.category = r.role_name

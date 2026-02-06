@@ -19,7 +19,7 @@ SELECT
         COALESCE(tr.averageRating, 0) AS average_rating,
         COALESCE(tr.numVotes, 0) AS number_of_votes
 FROM {{ source('bronze', 'title_basics') }} tb
-INNER JOIN {{ ref('title_type') }} tt
+LEFT JOIN {{ ref('title_type') }} tt
 ON tb.titleType = tt.title_type_name
 LEFT JOIN {{ source('bronze', 'title_ratings') }} tr
 ON tb.tconst = tr.tconst

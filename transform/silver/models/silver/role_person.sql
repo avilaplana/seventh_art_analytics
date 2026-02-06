@@ -21,5 +21,5 @@ SELECT
     rp.person_id, 
     r.role_id 
 FROM roles_person AS rp
-INNER JOIN {{ ref('role') }} AS r  
+LEFT JOIN {{ ref('role') }} AS r
 ON rp.role_name = r.role_name
