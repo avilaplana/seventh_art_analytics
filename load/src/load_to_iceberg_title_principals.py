@@ -11,9 +11,6 @@ title_principals_df = spark.read \
     .option("sep", "\t") \
     .csv(f"s3a://{object_path}/title.principals.tsv.gz")
 
-# Rename columns
-title_principals_rename_columns_df = title_principals_df.withColumnsRenamed({"tconst": "title_id", "nconst": "name_id"})
-
 # Load to Iceberg
 title_principals_df.writeTo("demo.bronze.title_principals").createOrReplace()
 
