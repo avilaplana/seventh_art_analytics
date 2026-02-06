@@ -16,20 +16,21 @@ FROM {{ source ('bronze', 'title_principals') }} tp
 INNER JOIN {{ source ('bronze', 'name_basics') }} nb -- FILTER OUT persons that are not defined in name_basics
 ON tp.nconst = nb.nconst
 ),
+
 title_principals_with_map AS (
-SELECT
-    title_id,
-    person_id,
-    category,
-    job,
-    COUNT(*) AS number_of_roles,
-    map_from_entries(collect_set(struct(ordering, characters))) AS characters
-FROM title_principals_cleaned
-GROUP BY
-    title_id,
-    person_id,
-    category,
-    job
+  SELECT
+      title_id,
+      person_id,
+      category,
+      job,
+      COUNT(*) AS number_of_roles,
+      map_from_entries(collect_set(struct(ordering, characters))) AS characters
+  FROM title_principals_cleaned
+  GROUP BY
+      title_id,
+      person_id,
+      category,
+      job
 )
 
 SELECT

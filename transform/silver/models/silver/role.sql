@@ -5,22 +5,22 @@ WITH roles_array AS (
 ),
 
 roles_distinct AS (
-SELECT
-    DISTINCT(
-            CASE
-                WHEN role = '\\N' OR role is NULL THEN 'UNKNOWN'
-                ELSE role
-            END) AS role
-FROM roles_array
-LATERAL VIEW explode(roles) t AS role
-ORDER BY role ASC
+  SELECT
+      DISTINCT(
+              CASE
+                  WHEN role = '\\N' OR role is NULL THEN 'UNKNOWN'
+                  ELSE role
+              END) AS role
+  FROM roles_array
+  LATERAL VIEW explode(roles) t AS role
+  ORDER BY role ASC
 ), 
 
 category_distinct AS (
-SELECT 
-  DISTINCT category AS role
-FROM {{ source('bronze', 'title_principals') }} 
-ORDER BY role ASC
+  SELECT
+    DISTINCT category AS role
+  FROM {{ source('bronze', 'title_principals') }}
+  ORDER BY role ASC
 ),
 
 all_roles AS (
@@ -30,4 +30,7 @@ all_roles AS (
   ORDER BY role ASC
 )
 
-SELECT UUID() AS role_id, role AS role_name FROM all_roles
+SELECT
+UUID() AS role_id,
+role AS role_name
+FROM all_roles

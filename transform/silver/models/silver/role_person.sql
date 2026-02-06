@@ -4,6 +4,7 @@ WITH roles_array AS (
     SPLIT(TRIM(primaryProfession), ',') AS roles
   FROM {{ source('bronze', 'name_basics') }}
 ),
+
 roles_person AS (
     SELECT
         DISTINCT 
@@ -15,6 +16,7 @@ roles_person AS (
     FROM roles_array
     LATERAL VIEW explode(roles) t AS role
 )
+
 SELECT 
     rp.person_id, 
     r.role_id 

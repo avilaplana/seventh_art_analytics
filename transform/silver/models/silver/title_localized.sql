@@ -21,6 +21,7 @@ WITH title_akas_cleaned AS (
     END AS is_original_title  
   FROM {{ source('bronze', 'title_akas') }}
 )
+
 SELECT 
   tac.title_id,
   tac.title,

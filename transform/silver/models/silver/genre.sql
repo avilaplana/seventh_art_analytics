@@ -1,7 +1,9 @@
 WITH array_genres AS (
     SELECT SPLIT(TRIM(genres), ',') AS genres
     FROM {{ source('bronze', 'title_basics') }}
-), distinct_genres AS (
+), 
+
+distinct_genres AS (
     SELECT
         DISTINCT(
             CASE
@@ -12,4 +14,8 @@ WITH array_genres AS (
     LATERAL VIEW explode(genres) AS genre
     ORDER BY genre_name ASC
 )
-SELECT UUID() AS genre_id, genre_name FROM distinct_genres
+
+SELECT
+    UUID() AS genre_id,
+    genre_name
+FROM distinct_genres
