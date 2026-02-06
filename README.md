@@ -36,12 +36,23 @@ The list of libraries, frameworks and components are the followig:
 | Iceberg Catalog | tabulario/rest-iceberg | 1.6.0 | REST catalog for Iceberg |
 | Object Storage | MinIO (minio/minio) | RELEASE.2025-09-07T16-13-09Z-cpuv1 | S3-compatible object storage for data lake |
 
-## Current status
+## Data Modeling
 
-- Data modelling: Silver and Gold Layers
-- Migrate to Airflow 3
-- Provide a UI to query the data for testing purposes
-- Provide AI Text-to-SQL approach
+- **Bronze layer**
+
+![Bronze layer](doc/silver_er_bronze_diagram.png)
+
+
+- **Silver layer**
+
+![Bronze layer](doc/silver_er_silver_diagram.png)
+
+## Current Status
+- Enriching actors and region/country data.
+- Improve DBT data validation.
+- Data modelling: Gold Layers (Star schema).
+- Migrate to Airflow 3.
+- Provide AI Text-to-SQL approach.
 
 
 
