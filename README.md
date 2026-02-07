@@ -47,6 +47,9 @@ The list of libraries, frameworks and components are the followig:
 
 ![Bronze layer](doc/silver_er_silver_diagram.png)
 
+### SQL Exercises
+- [50 SQL Questions for Silver Layer](doc/sql_exercises_50_difficult_questions.md) - Comprehensive SQL exercises covering the complete silver layer ER data model (all tables and relationships), designed for practice and RAG system implementation.
+
 ## Current Status
 - Enriching actors and region/country data.
 - Improve DBT data validation.
