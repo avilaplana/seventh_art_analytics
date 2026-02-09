@@ -66,7 +66,7 @@ with DAG(
     spark_bronze_tasks = []
     
     for job in load_bronze_jobs:
-        spark_task_id = f"SPARK_bronze_{job}"
+        spark_task_id = f"load_SPARK_bronze_{job}"
         spark_task = BashOperator(
             retries=0,          # fail fast on Spark job
             task_id=spark_task_id,
@@ -75,20 +75,72 @@ with DAG(
         spark_bronze_tasks.append(spark_task)
 
     ############################################
-    # Step 3: Transform Medallion Silver layer #
+    # Step 3: Install DBT dependencies #
     ############################################
     projects_dir = os.environ["PROJECTS_DIR"]
 
-    dbt_silver_command = """build 
+    dbt_dbt_command = """deps
+    --project-dir /usr/app/dbt/silver
+    """
+    
+    dbt_deps_task = DockerOperator(
+        task_id="transform_DBT_deps",
+        image="dbt-spark:f5bf2ec",
+        command=dbt_dbt_command,
+        mounts=[
+                Mount(
+                    source=f"{projects_dir}/seventh_art_analytics/transform",
+                    target="/usr/app/dbt",
+                    type="bind",
+                )
+            ],
+        network_mode="seventh_art_analytics_iceberg_net",
+        docker_url="unix://var/run/docker.sock",
+        auto_remove=True,
+        tty=True,
+        mount_tmp_dir=False,
+    )
+
+    ############################################
+    # Step 4: Transform Medallion Silver layer #
+    ############################################
+    dbt_silver_run_command = """run 
     --profiles-dir /usr/app/dbt 
     --target local 
     --project-dir /usr/app/dbt/silver
     """
     
-    dbt_silver_task = DockerOperator(
-        task_id="DBT_silver_layer",
+    dbt_silver_run_task = DockerOperator(
+        task_id="transform_DBT_silver_layer",
         image="dbt-spark:f5bf2ec",
-        command=dbt_silver_command,
+        command=dbt_silver_run_command,
+        mounts=[
+                Mount(
+                    source=f"{projects_dir}/seventh_art_analytics/transform",
+                    target="/usr/app/dbt",
+                    type="bind",
+                )
+            ],
+        network_mode="seventh_art_analytics_iceberg_net",
+        docker_url="unix://var/run/docker.sock",
+        auto_remove=True,
+        tty=True,
+        mount_tmp_dir=False,
+    )
+
+     ############################################
+    # Step 4: Transform Medallion Silver layer #
+    ############################################
+    dbt_silver_test_command = """test 
+    --profiles-dir /usr/app/dbt 
+    --target local 
+    --project-dir /usr/app/dbt/silver
+    """
+    
+    dbt_silver_test_task = DockerOperator(
+        task_id="transform_DBT_test_silver_layer",
+        image="dbt-spark:f5bf2ec",
+        command=dbt_silver_test_command,
         mounts=[
                 Mount(
                     source=f"{projects_dir}/seventh_art_analytics/transform",
@@ -103,4 +155,5 @@ with DAG(
         mount_tmp_dir=False,
     )
    
-    extract_tasks >> spark_bronze_tasks[0] >> spark_bronze_tasks[1:8] >> dbt_silver_task
+
+    extract_tasks >> spark_bronze_tasks[0] >> spark_bronze_tasks[1:8] >> dbt_deps_task >> dbt_silver_run_task >> dbt_silver_test_task

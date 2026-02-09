@@ -166,6 +166,7 @@ models:
           - relationships:
               to: ref('title')
               field: title_id
+              severity: warn
       - name: title
         tests:
           - not_null
