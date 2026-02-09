@@ -36,6 +36,12 @@ The list of libraries, frameworks and components are the followig:
 | Iceberg Catalog | tabulario/rest-iceberg | 1.6.0 | REST catalog for Iceberg |
 | Object Storage | MinIO (minio/minio) | RELEASE.2025-09-07T16-13-09Z-cpuv1 | S3-compatible object storage for data lake |
 
+## Scheduler
+
+- **Airflow**
+  
+![Airflow](doc/imdb_data_platform.png)
+
 ## Data Modeling
 
 - **Bronze layer**
