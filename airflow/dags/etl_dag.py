@@ -129,18 +129,18 @@ with DAG(
     )
 
      ############################################
-    # Step 4: Transform Medallion Silver layer #
+    # Step 5: Data Validation Silver layer #
     ############################################
-    dbt_silver_test_command = """test 
+    dbt_silver_validation_command = """test
     --profiles-dir /usr/app/dbt 
     --target local 
     --project-dir /usr/app/dbt/silver
     """
     
-    dbt_silver_test_task = DockerOperator(
-        task_id="transform_DBT_test_silver_layer",
+    dbt_silver_validation_task = DockerOperator(
+        task_id="transform_DBT_validation_silver_layer",
         image="dbt-spark:f5bf2ec",
-        command=dbt_silver_test_command,
+        command=dbt_silver_validation_command,
         mounts=[
                 Mount(
                     source=f"{projects_dir}/seventh_art_analytics/transform",
@@ -156,4 +156,4 @@ with DAG(
     )
    
 
-    extract_tasks >> spark_bronze_tasks[0] >> spark_bronze_tasks[1:8] >> dbt_deps_task >> dbt_silver_run_task >> dbt_silver_test_task
+    extract_tasks >> spark_bronze_tasks[0] >> spark_bronze_tasks[1:8] >> dbt_deps_task >> dbt_silver_run_task >> dbt_silver_validation_task

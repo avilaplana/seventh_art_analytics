@@ -23,6 +23,11 @@ models:
           - not_null
           - unique
   - name: role_person
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - role_id
+            - person_id
     columns:
       - name: role_id
         tests:
@@ -88,6 +93,11 @@ models:
         tests:
           - not_null
   - name: genre_title
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - genre_id
+            - title_id
     columns:
       - name: genre_id
         tests:
@@ -101,7 +111,13 @@ models:
           - relationships:
               to: ref('title')
               field: title_id
-  - name: title_person
+  - name: title_person_role
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - title_id
+            - person_id
+            - role_id
     columns:
       - name: title_id
         tests:
@@ -159,6 +175,14 @@ models:
           - not_null
           - unique
   - name: title_localized
+    tests:
+        - dbt_utils.unique_combination_of_columns:
+            combination_of_columns:
+              - title_id
+              - region_id
+              - language_id
+              - attribute_id
+              - ordering
     columns:
       - name: title_id
         tests:
