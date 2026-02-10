@@ -154,16 +154,6 @@ models:
         tests:
           - not_null
           - unique
-  - name: language
-    columns:
-      - name: language_id
-        tests:
-          - not_null
-          - unique
-      - name: language_name
-        tests:
-          - not_null
-          - unique
   - name: attribute
     columns:
       - name: attribute_id
@@ -205,9 +195,8 @@ models:
               field: region_id
       - name: language_id
         tests:
-          - not_null
           - relationships:
-              to: ref('language')
+              to: ref('languages')
               field: language_id
       - name: attribute_id
         tests:

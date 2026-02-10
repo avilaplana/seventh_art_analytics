@@ -79,14 +79,14 @@ with DAG(
     ############################################
     projects_dir = os.environ["PROJECTS_DIR"]
 
-    dbt_dbt_command = """deps
+    dbt_deps_command = """deps
     --project-dir /usr/app/dbt/silver
     """
     
     dbt_deps_task = DockerOperator(
         task_id="transform_DBT_deps",
         image="dbt-spark:f5bf2ec",
-        command=dbt_dbt_command,
+        command=dbt_deps_command,
         mounts=[
                 Mount(
                     source=f"{projects_dir}/seventh_art_analytics/transform",
@@ -102,7 +102,35 @@ with DAG(
     )
 
     ############################################
-    # Step 4: Transform Medallion Silver layer #
+    # Step 4: Install DBT seed #
+    ############################################
+    projects_dir = os.environ["PROJECTS_DIR"]
+
+    dbt_seed_command = """seed
+    --project-dir /usr/app/dbt/silver
+    """
+
+    dbt_seed_task = DockerOperator(
+        task_id="transform_DBT_seed",
+        image="dbt-spark:f5bf2ec",
+        command=dbt_seed_command,
+        mounts=[
+                Mount(
+                    source=f"{projects_dir}/seventh_art_analytics/transform",
+                    target="/usr/app/dbt",
+                    type="bind",
+                )
+            ],
+        network_mode="seventh_art_analytics_iceberg_net",
+        docker_url="unix://var/run/docker.sock",
+        auto_remove=True,
+        tty=True,
+        mount_tmp_dir=False,
+    )
+
+
+    ############################################
+    # Step 5: Transform Medallion Silver layer #
     ############################################
     dbt_silver_run_command = """run 
     --profiles-dir /usr/app/dbt 
@@ -129,7 +157,7 @@ with DAG(
     )
 
      ############################################
-    # Step 5: Data Validation Silver layer #
+    # Step 6: Data Validation Silver layer #
     ############################################
     dbt_silver_validation_command = """test
     --profiles-dir /usr/app/dbt 
@@ -156,4 +184,4 @@ with DAG(
     )
    
 
-    extract_tasks >> spark_bronze_tasks[0] >> spark_bronze_tasks[1:8] >> dbt_deps_task >> dbt_silver_run_task >> dbt_silver_validation_task
+    extract_tasks >> spark_bronze_tasks[0] >> spark_bronze_tasks[1:8] >> dbt_deps_task >> dbt_seed_task >> dbt_silver_run_task >> dbt_silver_validation_task

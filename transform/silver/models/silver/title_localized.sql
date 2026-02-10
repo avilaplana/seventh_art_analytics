@@ -8,9 +8,9 @@ WITH title_akas_cleaned AS (
         ELSE region
       END AS region_name,
     CASE
-        WHEN language = '\\N' OR language is NULL THEN 'UNKNOWN'
+        WHEN language = '\\N' THEN NULL
         ELSE language
-      END AS language_name, 
+      END AS language_code,
     CASE
         WHEN attributes = '\\N' OR attributes is NULL THEN 'UNKNOWN'
         ELSE attributes
@@ -33,7 +33,7 @@ SELECT
 FROM title_akas_cleaned tac
 LEFT JOIN {{ ref('region') }} rr
 ON tac.region_name = rr.region_name
-LEFT JOIN {{ ref('language') }} ll
-ON tac.language_name = ll.language_name
+LEFT JOIN {{ ref('languages') }} ll
+ON tac.language_code = ll.language_code
 LEFT JOIN {{ ref('attribute') }} aa
 ON tac.attribute_name = aa.attribute_name
