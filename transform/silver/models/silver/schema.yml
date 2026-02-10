@@ -144,16 +144,6 @@ models:
       - name: characters
         tests:
           - not_null
-  - name: region
-    columns:
-      - name: region_id
-        tests:
-          - not_null
-          - unique
-      - name: region_name
-        tests:
-          - not_null
-          - unique
   - name: attribute
     columns:
       - name: attribute_id
@@ -189,7 +179,6 @@ models:
           - not_null
       - name: region_id
         tests:
-          - not_null
           - relationships:
               to: ref('region')
               field: region_id
@@ -200,7 +189,6 @@ models:
               field: language_id
       - name: attribute_id
         tests:
-          - not_null
           - relationships:
               to: ref('attribute')
               field: attribute_id

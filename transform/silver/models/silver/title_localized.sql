@@ -4,15 +4,15 @@ WITH title_akas_cleaned AS (
     title as title,
     ordering as ordering,
     CASE
-        WHEN region = '\\N' OR region is NULL THEN 'UNKNOWN'
+        WHEN region = '\\N' THEN NULL
         ELSE region
-      END AS region_name,
+      END AS region_code,
     CASE
         WHEN language = '\\N' THEN NULL
         ELSE language
       END AS language_code,
     CASE
-        WHEN attributes = '\\N' OR attributes is NULL THEN 'UNKNOWN'
+        WHEN attributes = '\\N' THEN NULL
         ELSE attributes
       END AS attribute_name,  
     CASE
@@ -31,8 +31,8 @@ SELECT
   aa.attribute_id,
   tac.is_original_title
 FROM title_akas_cleaned tac
-LEFT JOIN {{ ref('region') }} rr
-ON tac.region_name = rr.region_name
+LEFT JOIN {{ ref('regions') }} rr
+ON tac.region_code = rr.region_code
 LEFT JOIN {{ ref('languages') }} ll
 ON tac.language_code = ll.language_code
 LEFT JOIN {{ ref('attribute') }} aa
