@@ -163,6 +163,8 @@ models:
               - language_id
               - attribute_id
               - ordering
+        - distinct_region_count_matches
+        - distinct_language_count_matches
     columns:
       - name: title_id
         tests:

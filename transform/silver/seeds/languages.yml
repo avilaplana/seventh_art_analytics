@@ -1,0 +1,36 @@
+version: 2
+
+seeds:
+  - name: languages
+    description: Reference table of supported language codes
+    columns:
+      - name: language_id
+        description: Stable surrogate key for the language
+        tests:
+          - unique
+          - not_null
+
+      - name: language_code
+        description: ISO 639 language code
+        tests:
+          - unique
+          - not_null
+
+      - name: iso_standard
+        description: ISO standard or classification for the language code
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - iso_639_1
+                - iso_639_3
+                - collection
+                - private_use
+
+      - name: language_name
+        description: English display name of the language
+        tests:
+          - not_null
+
+      - name: notes
+        description: Additional context such as macrolanguage, historical usage, or private-use notes

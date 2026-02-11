@@ -1,0 +1,111 @@
+language_id,language_code,iso_standard,language_name,notes
+1,af,iso_639_1,Afrikaans,
+2,am,iso_639_1,Amharic,
+3,ar,iso_639_1,Arabic,Macrolanguage
+4,az,iso_639_1,Azerbaijani,
+5,be,iso_639_1,Belarusian,
+6,bg,iso_639_1,Bulgarian,
+7,bn,iso_639_1,Bengali,
+8,br,iso_639_1,Breton,
+9,bs,iso_639_1,Bosnian,
+10,ca,iso_639_1,Catalan,
+11,cmn,iso_639_3,Mandarin Chinese,Chinese variety
+12,cr,iso_639_1,Cree,Macrolanguage
+13,cs,iso_639_1,Czech,
+14,cy,iso_639_1,Welsh,
+15,da,iso_639_1,Danish,
+16,dak,iso_639_3,Dakota,
+17,de,iso_639_1,German,
+18,eka,iso_639_3,Ekajuk,
+19,el,iso_639_1,Greek,Modern Greek
+20,elx,iso_639_3,Elamite,Ancient language
+21,en,iso_639_1,English,
+22,es,iso_639_1,Spanish,
+23,et,iso_639_1,Estonian,
+24,eu,iso_639_1,Basque,
+25,fa,iso_639_1,Persian,Farsi
+26,fi,iso_639_1,Finnish,
+27,fil,iso_639_3,Filipino,
+28,fr,iso_639_1,French,
+29,fro,iso_639_3,Old French,Historical language
+30,ga,iso_639_1,Irish,
+31,gd,iso_639_1,Scottish Gaelic,
+32,gl,iso_639_1,Galician,
+33,gsw,iso_639_3,Swiss German,Alemannic
+34,gu,iso_639_1,Gujarati,
+35,haw,iso_639_1,Hawaiian,
+36,he,iso_639_1,Hebrew,
+37,hi,iso_639_1,Hindi,
+38,hil,iso_639_3,Hiligaynon,
+39,hr,iso_639_1,Croatian,
+40,hu,iso_639_1,Hungarian,
+41,hy,iso_639_1,Armenian,
+42,id,iso_639_1,Indonesian,
+43,is,iso_639_1,Icelandic,
+44,it,iso_639_1,Italian,
+45,iu,iso_639_1,Inuktitut,
+46,ja,iso_639_1,Japanese,
+47,jsl,iso_639_3,Japanese Sign Language,
+48,jv,iso_639_1,Javanese,
+49,ka,iso_639_1,Georgian,
+50,kk,iso_639_1,Kazakh,
+51,kn,iso_639_1,Kannada,
+52,ko,iso_639_1,Korean,
+53,ku,iso_639_1,Kurdish,Macrolanguage
+54,ky,iso_639_1,Kyrgyz,
+55,la,iso_639_1,Latin,Ancient language
+56,lb,iso_639_1,Luxembourgish,
+57,lo,iso_639_1,Lao,
+58,lt,iso_639_1,Lithuanian,
+59,lv,iso_639_1,Latvian,
+60,mi,iso_639_1,Maori,
+61,mk,iso_639_1,Macedonian,
+62,ml,iso_639_1,Malayalam,
+63,mn,iso_639_1,Mongolian,
+64,mr,iso_639_1,Marathi,
+65,ms,iso_639_1,Malay,
+66,my,iso_639_1,Burmese,
+67,myv,iso_639_3,Erzya,
+68,ne,iso_639_1,Nepali,
+69,nl,iso_639_1,Dutch,
+70,no,iso_639_1,Norwegian,Macrolanguage
+71,pa,iso_639_1,Punjabi,
+72,pl,iso_639_1,Polish,
+73,prs,iso_639_3,Dari,Afghan Persian
+74,ps,iso_639_1,Pashto,
+75,pt,iso_639_1,Portuguese,
+76,qac,private_use,Unknown,Private-use code
+77,qal,private_use,Unknown,Private-use code
+78,qbn,private_use,Unknown,Private-use code
+79,qbo,private_use,Unknown,Private-use code
+80,qbp,private_use,Unknown,Private-use code
+81,rm,iso_639_1,Romansh,
+82,ro,iso_639_1,Romanian,
+83,roa,collection,Romance languages,Language collection
+84,ru,iso_639_1,Russian,
+85,sd,iso_639_1,Sindhi,
+86,sk,iso_639_1,Slovak,
+87,sl,iso_639_1,Slovenian,
+88,sr,iso_639_1,Serbian,
+89,st,iso_639_1,Southern Sotho,
+90,su,iso_639_1,Sundanese,
+91,sv,iso_639_1,Swedish,
+92,ta,iso_639_1,Tamil,
+93,tai,collection,Tai languages,Language collection
+94,te,iso_639_1,Telugu,
+95,tg,iso_639_1,Tajik,
+96,th,iso_639_1,Thai,
+97,tk,iso_639_1,Turkmen,
+98,tl,iso_639_1,Tagalog,
+99,tn,iso_639_1,Tswana,
+100,tr,iso_639_1,Turkish,
+101,uk,iso_639_1,Ukrainian,
+102,ur,iso_639_1,Urdu,
+103,uz,iso_639_1,Uzbek,
+104,vi,iso_639_1,Vietnamese,
+105,wo,iso_639_1,Wolof,
+106,xh,iso_639_1,Xhosa,
+107,yi,iso_639_1,Yiddish,
+108,yue,iso_639_3,Cantonese,Chinese variety
+109,zh,iso_639_1,Chinese,Macrolanguage
+110,zu,iso_639_1,Zulu,

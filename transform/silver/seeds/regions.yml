@@ -1,0 +1,50 @@
+version: 2
+
+seeds:
+  - name: regions
+    description: >
+      Reference table of regions and countries based on ISO 3166-1,
+      including historical, reserved, private-use, and explicit UNKNOWN
+      region codes as provided by upstream sources.
+    columns:
+      - name: region_id
+        description: >
+          Surrogate identifier for the region. Deterministic and stable,
+          generated from the ordered seed to allow safe joins.
+        tests:
+          - not_null
+          - unique
+
+      - name: region_code
+        description: >
+          Region or country code as received from source systems.
+          Primarily ISO 3166-1 alpha-2, but may include historical,
+          reserved, private-use, or non-ISO values.
+        tests:
+          - not_null
+          - unique
+
+      - name: iso_standard
+        description: >
+          Classification of the region code standard.
+          Examples include:
+          - iso_3166_1
+          - iso_3166_historical
+          - iso_3166_reserved
+          - private_use
+          - non_iso
+        tests:
+          - not_null
+
+      - name: region_name
+        description: >
+          Canonical English name of the region or country.
+          For historical or aggregate codes, reflects the commonly
+          accepted name at the time of use.
+        tests:
+          - not_null
+
+      - name: notes
+        description: >
+          Optional contextual notes describing historical status,
+          political changes, special usage, or source-specific meaning.
