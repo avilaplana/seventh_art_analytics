@@ -1,0 +1,30 @@
+models:
+  - name: title
+    columns:
+      - name: title_id
+        tests:
+          - not_null
+          - unique
+      - name: title_type_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('title_type')
+              field: title_type_id
+      - name: primary_title
+        tests:
+          - not_null
+      - name: original_title
+        tests:
+          - not_null
+      - name: is_adult
+        tests:
+          - not_null
+      - name: release_year
+      - name: duration_minutes
+      - name: average_rating
+        tests:
+          - not_null
+      - name: number_of_votes
+        tests:
+          - not_null

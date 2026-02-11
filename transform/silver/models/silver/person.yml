@@ -1,0 +1,12 @@
+models:
+  - name: person
+    columns:
+      - name: person_id
+        tests:
+          - not_null
+          - unique
+      - name: name
+        tests:
+          - not_null
+      - name: birth_year
+      - name: death_year

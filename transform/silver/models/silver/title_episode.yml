@@ -1,0 +1,17 @@
+models:
+  - name: title_episode
+    columns:
+      - name: title_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('title')
+              field: title_id
+      - name: parent_title_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('title')
+              field: title_id
+      - name: season_number
+      - name: episode_number

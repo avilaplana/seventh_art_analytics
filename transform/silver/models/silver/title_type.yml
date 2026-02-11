@@ -1,0 +1,11 @@
+models:
+  - name: title_type
+    columns:
+      - name: title_type_id
+        tests:
+          - not_null
+          - unique
+      - name: title_type_name
+        tests:
+          - not_null
+          - unique

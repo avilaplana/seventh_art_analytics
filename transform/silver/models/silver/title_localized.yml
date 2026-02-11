@@ -1,0 +1,44 @@
+models:
+  - name: title_localized
+    tests:
+        - dbt_utils.unique_combination_of_columns:
+            combination_of_columns:
+              - title_id
+              - region_id
+              - language_id
+              - attribute_id
+              - ordering
+        - distinct_region_count_matches
+        - distinct_language_count_matches
+    columns:
+      - name: title_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('title')
+              field: title_id
+              severity: warn
+      - name: title
+        tests:
+          - not_null
+      - name: ordering
+        tests:
+          - not_null
+      - name: region_id
+        tests:
+          - relationships:
+              to: ref('regions')
+              field: region_id
+      - name: language_id
+        tests:
+          - relationships:
+              to: ref('languages')
+              field: language_id
+      - name: attribute_id
+        tests:
+          - relationships:
+              to: ref('attribute')
+              field: attribute_id
+      - name: is_original_title
+        tests:
+          - not_null

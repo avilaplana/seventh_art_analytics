@@ -1,0 +1,20 @@
+models:
+  - name: genre_title
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - genre_id
+            - title_id
+    columns:
+      - name: genre_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('genre')
+              field: genre_id
+      - name: title_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('title')
+              field: title_id

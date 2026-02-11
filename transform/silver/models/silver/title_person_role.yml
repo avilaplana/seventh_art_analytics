@@ -1,0 +1,34 @@
+models:
+  - name: title_person_role
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - title_id
+            - person_id
+            - role_id
+    columns:
+      - name: title_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('title')
+              field: title_id
+      - name: person_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('person')
+              field: person_id
+      - name: role_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('role')
+              field: role_id
+      - name: job
+      - name: number_of_roles
+        tests:
+          - not_null
+      - name: characters
+        tests:
+          - not_null

@@ -1,0 +1,11 @@
+models:
+  - name: role
+    columns:
+      - name: role_id
+        tests:
+          - not_null
+          - unique
+      - name: role_name
+        tests:
+          - not_null
+          - unique

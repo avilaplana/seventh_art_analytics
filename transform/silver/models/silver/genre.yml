@@ -1,0 +1,11 @@
+models:
+  - name: genre
+    columns:
+      - name: genre_id
+        tests:
+          - not_null
+          - unique
+      - name: genre_name
+        tests:
+          - not_null
+          - unique
