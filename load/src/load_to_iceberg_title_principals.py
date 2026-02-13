@@ -1,5 +1,6 @@
 from pyspark.sql import SparkSession
 from s3_utils import object_path
+from pyspark.sql.functions import current_date
 
 spark = SparkSession.builder \
     .appName("load-title-principals-Iceberg-MinIO") \
@@ -12,6 +13,8 @@ title_principals_df = spark.read \
     .csv(f"s3a://{object_path}/title.principals.tsv.gz")
 
 # Load to Iceberg
-title_principals_df.writeTo("demo.bronze.title_principals").createOrReplace()
+title_principals_df \
+    .withColumn("ingestion_date", current_date()) \
+    .writeTo("demo.bronze.title_principals").createOrReplace()
 
 spark.stop()
