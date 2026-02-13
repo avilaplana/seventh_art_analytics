@@ -1,4 +1,17 @@
-WITH title_akas_cleaned AS (
+{{ config(
+    materialized='incremental',
+    unique_key=['title_id', 'ordering', 'region_id', 'language_id', 'attribute_id']
+) }}
+
+WITH latest_snapshot_title_akas AS (
+    SELECT *
+    FROM {{ source('bronze', 'title_akas') }}
+    WHERE ingestion_date = (
+        SELECT MAX(ingestion_date) 
+        FROM {{ source('bronze', 'title_akas') }}
+    )
+),
+title_akas_cleaned AS (
   SELECT
     titleId as title_id, 
     title as title,
@@ -19,7 +32,7 @@ WITH title_akas_cleaned AS (
       WHEN isOriginalTitle = 0 THEN FALSE
       ELSE TRUE
     END AS is_original_title  
-  FROM {{ source('bronze', 'title_akas') }}
+  FROM latest_snapshot_title_akas
 )
 
 SELECT 

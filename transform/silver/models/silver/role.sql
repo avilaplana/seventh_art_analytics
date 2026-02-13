@@ -1,7 +1,28 @@
-WITH roles_array AS (
+{{ config(
+    materialized='incremental',
+    unique_key='role_id'
+) }}
+
+WITH latest_snapshot_name_basics AS (
+    SELECT *
+    FROM {{ source('bronze', 'name_basics') }}
+    WHERE ingestion_date = (
+        SELECT MAX(ingestion_date) 
+        FROM {{ source('bronze', 'name_basics') }}
+    )
+),
+latest_snapshot_title_principals AS (
+    SELECT *
+    FROM {{ source('bronze', 'title_principals') }}
+    WHERE ingestion_date = (
+        SELECT MAX(ingestion_date) 
+        FROM {{ source('bronze', 'title_principals') }}
+    )
+),
+roles_array AS (
   SELECT    
     SPLIT(TRIM(primaryProfession), ',') AS roles
-  FROM {{ source('bronze', 'name_basics') }}
+  FROM latest_snapshot_name_basics
 ),
 
 roles_distinct AS (
@@ -19,7 +40,7 @@ roles_distinct AS (
 category_distinct AS (
   SELECT
     DISTINCT category AS role
-  FROM {{ source('bronze', 'title_principals') }}
+  FROM latest_snapshot_title_principals
   ORDER BY role ASC
 ),
 

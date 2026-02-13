@@ -1,7 +1,20 @@
-WITH array_genres AS (
+{{ config(
+    materialized='incremental',
+    unique_key=['title_id', 'genre_id']
+) }}
+
+WITH latest_snapshot_title_basics AS (
+    SELECT *
+    FROM {{ source('bronze', 'title_basics') }}
+    WHERE ingestion_date = (
+        SELECT MAX(ingestion_date) 
+        FROM {{ source('bronze', 'title_basics') }}
+    )
+),
+array_genres AS (
     SELECT SPLIT(TRIM(genres), ',') AS genres,
     tconst as title_id
-    FROM {{ source('bronze', 'title_basics') }}
+    FROM latest_snapshot_title_basics
 ), 
 title_genre AS (
     SELECT

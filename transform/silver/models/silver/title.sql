@@ -1,3 +1,24 @@
+{{ config(
+    materialized='incremental',
+    unique_key='title_id'
+) }}
+
+WITH latest_snapshot_title_basics AS (
+    SELECT *
+    FROM {{ source('bronze', 'title_basics') }}
+    WHERE ingestion_date = (
+        SELECT MAX(ingestion_date) 
+        FROM {{ source('bronze', 'title_basics') }}
+    )
+)
+,latest_snapshot_title_ratings AS (
+    SELECT *
+    FROM {{ source('bronze', 'title_ratings') }}
+    WHERE ingestion_date = (
+        SELECT MAX(ingestion_date) 
+        FROM {{ source('bronze', 'title_ratings') }}
+    )
+)
 
 SELECT
     tb.tconst AS title_id,
@@ -18,8 +39,8 @@ SELECT
     END AS duration_minutes,
         COALESCE(tr.averageRating, 0) AS average_rating,
         COALESCE(tr.numVotes, 0) AS number_of_votes
-FROM {{ source('bronze', 'title_basics') }} tb
+FROM latest_snapshot_title_basics tb
 LEFT JOIN {{ ref('title_type') }} tt
 ON tb.titleType = tt.title_type_name
-LEFT JOIN {{ source('bronze', 'title_ratings') }} tr
+LEFT JOIN latest_snapshot_title_ratings tr
 ON tb.tconst = tr.tconst

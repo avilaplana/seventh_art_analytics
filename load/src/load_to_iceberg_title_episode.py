@@ -15,6 +15,7 @@ title_episode_df = spark.read \
 # Load to Iceberg
 title_episode_df \
     .withColumn("ingestion_date", current_date()) \
-    .writeTo("demo.bronze.title_episode").createOrReplace()
+    .writeTo("demo.bronze.title_episode") \
+    .overwritePartitions()
 
 spark.stop()

@@ -1,8 +1,21 @@
-WITH roles_array AS (
+{{ config(
+    materialized='incremental',
+    unique_key=['person_id', 'role_id']
+) }}
+
+WITH latest_snapshot_name_basics AS (
+    SELECT *
+    FROM {{ source('bronze', 'name_basics') }}
+    WHERE ingestion_date = (
+        SELECT MAX(ingestion_date) 
+        FROM {{ source('bronze', 'name_basics') }}
+    )
+),
+roles_array AS (
   SELECT
     nconst AS person_id,    
     SPLIT(TRIM(primaryProfession), ',') AS roles
-  FROM {{ source('bronze', 'name_basics') }}
+  FROM latest_snapshot_name_basics
 ),
 
 roles_person AS (

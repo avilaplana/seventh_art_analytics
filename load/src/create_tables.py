@@ -8,15 +8,6 @@ spark = SparkSession.builder \
 # Create Iceberg Tables
 spark.sql("""CREATE NAMESPACE IF NOT EXISTS default""")
 
-# Drop tables
-spark.sql("""DROP TABLE IF EXISTS demo.bronze.name_basics""")
-spark.sql("""DROP TABLE IF EXISTS demo.bronze.title_akas""")
-spark.sql("""DROP TABLE IF EXISTS demo.bronze.title_basics""")
-spark.sql("""DROP TABLE IF EXISTS demo.bronze.title_crew""")
-spark.sql("""DROP TABLE IF EXISTS demo.bronze.title_episode""")
-spark.sql("""DROP TABLE IF EXISTS demo.bronze.title_principals""")
-spark.sql("""DROP TABLE IF EXISTS demo.bronze.title_ratings""")
-
 # Create Iceberg Tables
 spark.sql("""
 CREATE TABLE IF NOT EXISTS demo.bronze.name_basics (
@@ -25,8 +16,11 @@ CREATE TABLE IF NOT EXISTS demo.bronze.name_basics (
     birthYear STRING,
     deathYear STRING,
     primaryProfession STRING,
-    knownForTitles STRING
-) USING iceberg
+    knownForTitles STRING,
+    ingestion_date DATE 
+)
+USING iceberg
+PARTITIONED BY (ingestion_date)
 """)
 
 spark.sql("""
@@ -38,8 +32,11 @@ CREATE TABLE IF NOT EXISTS demo.bronze.title_akas (
     language STRING,
     types STRING,
     attributes STRING,
-    isOriginalTitle STRING
-) USING iceberg
+    isOriginalTitle STRING,
+    ingestion_date DATE
+)
+USING iceberg
+PARTITIONED BY (ingestion_date)    
 """)
 
 spark.sql("""
@@ -52,16 +49,22 @@ CREATE TABLE IF NOT EXISTS demo.bronze.title_basics (
     startYear STRING,
     endYear STRING,
     runtimeMinutes STRING,
-    genres STRING
-) USING iceberg
+    genres STRING,
+    ingestion_date DATE
+)
+USING iceberg
+PARTITIONED BY (ingestion_date)
 """)
 
 spark.sql("""
 CREATE TABLE IF NOT EXISTS demo.bronze.title_crew (
     tconst STRING,
     directors STRING,
-    writers STRING
-) USING iceberg
+    writers STRING,
+    ingestion_date DATE
+)
+USING iceberg
+PARTITIONED BY (ingestion_date)
 """)
 
 spark.sql("""
@@ -69,8 +72,11 @@ CREATE TABLE IF NOT EXISTS demo.bronze.title_episode (
     tconst STRING,
     parentTconst STRING,
     seasonNumber STRING,
-    episodeNumber STRING
-) USING iceberg
+    episodeNumber STRING,
+    ingestion_date DATE
+)
+USING iceberg
+PARTITIONED BY (ingestion_date)
 """)
 
 spark.sql("""
@@ -80,16 +86,22 @@ CREATE TABLE IF NOT EXISTS demo.bronze.title_principals (
     nconst STRING,
     category STRING,
     job STRING,
-    characters STRING
-) USING iceberg
+    characters STRING,
+    ingestion_date DATE          
+) 
+USING iceberg
+PARTITIONED BY (ingestion_date)
 """)
 
 spark.sql("""
 CREATE TABLE IF NOT EXISTS demo.bronze.title_ratings (
     tconst STRING,
     averageRating STRING,
-    numVotes STRING
-) USING iceberg
+    numVotes STRING,
+    ingestion_date DATE
+)
+USING iceberg
+PARTITIONED BY (ingestion_date)
 """)
 
 spark.stop()

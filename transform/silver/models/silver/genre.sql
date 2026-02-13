@@ -1,8 +1,20 @@
-WITH array_genres AS (
-    SELECT SPLIT(TRIM(genres), ',') AS genres
-    FROM {{ source('bronze', 'title_basics') }}
-), 
+{{ config(
+    materialized='incremental',
+    unique_key='genre_id'
+) }}
 
+WITH latest_snapshot_title_basics AS (
+    SELECT *
+    FROM {{ source('bronze', 'title_basics') }}
+    WHERE ingestion_date = (
+        SELECT MAX(ingestion_date) 
+        FROM {{ source('bronze', 'title_basics') }}
+    )
+),
+array_genres AS (
+    SELECT SPLIT(TRIM(genres), ',') AS genres
+    FROM latest_snapshot_title_basics
+), 
 distinct_genres AS (
     SELECT
         DISTINCT(

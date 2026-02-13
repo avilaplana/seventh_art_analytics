@@ -1,4 +1,25 @@
-WITH title_principals_cleaned AS (
+{{ config(
+    materialized='incremental',
+    unique_key=['title_id', 'person_id', 'role_id']
+) }}
+
+WITH latest_snapshot_name_basics AS (
+    SELECT *
+    FROM {{ source('bronze', 'name_basics') }}
+    WHERE ingestion_date = (
+        SELECT MAX(ingestion_date) 
+        FROM {{ source('bronze', 'name_basics') }}
+    )
+),
+latest_snapshot_title_principals AS (
+    SELECT *
+    FROM {{ source('bronze', 'title_principals') }}
+    WHERE ingestion_date = (
+        SELECT MAX(ingestion_date) 
+        FROM {{ source('bronze', 'title_principals') }}
+    )
+),
+title_principals_cleaned AS (
   SELECT
     tp.tconst AS title_id,
     tp.nconst AS person_id,
@@ -12,8 +33,8 @@ WITH title_principals_cleaned AS (
       WHEN tp.characters = '\\N' THEN 'NOT DEFINED'
       ELSE TRIM(REPLACE(REPLACE(REPLACE(tp.characters, '[', ''), ']', ''), '\"',''))
     END AS characters
-FROM {{ source ('bronze', 'title_principals') }} tp
-INNER JOIN {{ source ('bronze', 'name_basics') }} nb -- FILTER OUT persons that are not defined in name_basics
+FROM  latest_snapshot_title_principals tp
+INNER JOIN latest_snapshot_name_basics nb -- FILTER OUT persons that are not defined in name_basics
 ON tp.nconst = nb.nconst
 ),
 
