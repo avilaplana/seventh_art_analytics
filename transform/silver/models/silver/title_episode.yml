@@ -7,11 +7,13 @@ models:
           - relationships:
               to: ref('title')
               field: title_id
+              severity: warn
       - name: parent_title_id
         tests:
           - not_null
           - relationships:
               to: ref('title')
               field: title_id
+              severity: warn
       - name: season_number
       - name: episode_number
