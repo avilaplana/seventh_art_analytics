@@ -7,7 +7,7 @@ distinct_genres AS (
     SELECT
         DISTINCT(
             CASE
-                WHEN genre = '\\N' OR genre is NULL THEN 'UNKNOWN'
+                WHEN genre = '\\N' THEN NULL
                 ELSE genre
             END) AS genre_name
     FROM array_genres
@@ -19,3 +19,4 @@ SELECT
     UUID() AS genre_id,
     genre_name
 FROM distinct_genres
+WHERE genre_name IS NOT NULL

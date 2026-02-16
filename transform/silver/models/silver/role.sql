@@ -5,10 +5,11 @@ WITH roles_array AS (
 ),
 
 roles_distinct AS (
+
   SELECT
       DISTINCT(
               CASE
-                  WHEN role = '\\N' OR role is NULL THEN 'UNKNOWN'
+                  WHEN role = '\\N' THEN NULL
                   ELSE role
               END) AS role
   FROM roles_array
@@ -25,12 +26,13 @@ category_distinct AS (
 
 all_roles AS (
   SELECT role FROM roles_distinct 
+  WHERE role IS NOT NULL
   UNION 
   SELECT role FROM category_distinct
   ORDER BY role ASC
 )
 
 SELECT
-UUID() AS role_id,
-role AS role_name
+  UUID() AS role_id,
+  role AS role_name
 FROM all_roles

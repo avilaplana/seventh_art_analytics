@@ -10,7 +10,7 @@ roles_person AS (
         DISTINCT 
             person_id, 
             CASE
-                    WHEN role = '\\N' OR role is NULL THEN 'UNKNOWN'
+                    WHEN role = '\\N' THEN NULL
                     ELSE role
             END AS role_name
     FROM roles_array
@@ -23,3 +23,4 @@ SELECT
 FROM roles_person AS rp
 LEFT JOIN {{ ref('role') }} AS r
 ON rp.role_name = r.role_name
+WHERE rp.role_name IS NOT NULL

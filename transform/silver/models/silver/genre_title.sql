@@ -7,7 +7,7 @@ title_genre AS (
     SELECT
         title_id,
         CASE
-            WHEN genre = '\\N' OR genre is NULL THEN 'UNKNOWN'
+            WHEN genre = '\\N' THEN NULL
             ELSE genre
         END AS genre_name
     FROM array_genres
@@ -21,3 +21,4 @@ SELECT
 FROM title_genre tg
 LEFT JOIN  {{ ref('genre') }} g
 ON tg.genre_name = g.genre_name
+WHERE tg.genre_name IS NOT NULL
