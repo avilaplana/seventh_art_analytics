@@ -35,11 +35,11 @@ Find all titles that have at least 3 different genres, include the title name, r
 ** Solution:**
 
 ```sql
-SELECT 
-	t.title_id, 
-	t.primary_title, 
-	t.release_year, 
-	t.average_rating, 
+SELECT
+	t.title_id,
+	t.primary_title,
+	t.release_year,
+	t.average_rating,
 	concat_ws(', ', sort_array(collect_list(g.genre_name)))  AS genre_list
 FROM demo.silver.title t
 JOIN demo.silver.genre_title gt
@@ -61,6 +61,75 @@ For each person who has worked in at least 5 different titles, find their most c
 **Expected Output Columns:** person_id, name, most_common_role, total_titles, avg_title_rating
 
 **Difficulty:** ⭐⭐⭐⭐⭐
+
+**Solution:**
+
+
+```sql
+WITH person_id_with_min_votes AS (
+	SELECT
+		p.person_id,
+		p.name,
+		MIN(t.number_of_votes) AS min_number_of_votes
+	FROM demo.silver.person p
+	JOIN demo.silver.title_person_role tpr
+	ON p.person_id = tpr.person_id
+	JOIN demo.silver.title t
+	ON tpr.title_id = t.title_id
+	GROUP BY p.person_id, p.name
+),
+person_and_role AS (
+  SELECT
+    tpr.person_id,
+    r.role_name,
+    COUNT(*) AS counter_role
+  FROM demo.silver.title_person_role tpr
+  JOIN demo.silver.role r
+  ON tpr.role_id = r.role_id
+  GROUP BY tpr.person_id, r.role_name
+),
+person_and_common_role_ranked AS (
+  SELECT
+    person_id,
+    role_name,
+    ROW_NUMBER() OVER (PARTITION BY person_id ORDER BY counter_role DESC,role_name) AS row_number
+    FROM person_and_role
+    
+), 
+person_and_most_common_role AS (
+	SELECT
+		person_id,
+    role_name
+	FROM person_and_common_role_ranked
+	WHERE row_number = 1
+),
+person_metrics AS (
+  SELECT
+    pmv.person_id,
+    pmv.name,
+    COUNT(*) AS total_titles,
+    AVG(t.average_rating) AS avg_title_rating
+  FROM person_id_with_min_votes pmv
+  JOIN demo.silver.title_person_role tpr
+  ON pmv.person_id = tpr.person_id
+  JOIN demo.silver.title t
+  ON tpr.title_id = t.title_id
+  WHERE pmv.min_number_of_votes >= 1000
+  GROUP BY pmv.person_id, pmv.name
+  HAVING total_titles >= 5
+)
+
+SELECT
+  pm.person_id,
+  pm.name,
+  pm.total_titles,
+  pm.avg_title_rating,
+  pcr.role_name AS most_common_role
+FROM person_metrics pm
+JOIN person_and_most_common_role pcr
+ON pm.person_id = pcr.person_id
+ORDER BY pm.avg_title_rating DESC
+```
 
 ---
 
