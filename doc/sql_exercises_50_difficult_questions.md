@@ -3,7 +3,7 @@
 This document contains 50 challenging SQL questions designed to test advanced SQL skills on the **complete silver layer Entity-Relationship (ER) data model**. These questions cover all tables and relationships in the silver layer schema, including:
 
 - **Core entities**: `title`, `person`, `role`, `genre`, `title_type`, `region`, `language`, `attribute`
-- **Junction tables**: `genre_title`, `title_person`, `role_person`
+- **Junction tables**: `genre_title`, `title_person_role`, `role_person`
 - **Hierarchical structures**: `title_episode` (series and episodes)
 - **Localization**: `title_localized` (multi-language and multi-region support)
 
@@ -31,6 +31,27 @@ Find all titles that have at least 3 different genres, include the title name, r
 **Expected Output Columns:** title_id, primary_title, release_year, average_rating, genre_list (comma-separated)
 
 **Difficulty:** ⭐⭐⭐⭐
+
+** Solution:**
+
+```sql
+SELECT 
+	t.title_id, 
+	t.primary_title, 
+	t.release_year, 
+	t.average_rating, 
+	concat_ws(', ', sort_array(collect_list(g.genre_name)))  AS genre_list
+FROM demo.silver.title t
+JOIN demo.silver.genre_title gt
+ON t.title_id = gt.title_id
+JOIN demo.silver.genre g
+ON gt.genre_id = g.genre_id
+WHERE t.release_year > 2010 and t.average_rating > 7.0
+GROUP BY t.title_id, t.primary_title, t.release_year, t.average_rating
+HAVING COUNT(*) > 2
+ORDER BY release_year, average_rating
+```
+
 
 ---
 
