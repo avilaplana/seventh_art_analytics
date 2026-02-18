@@ -1,11 +1,16 @@
 models:
   - name: role
+    description: >
+      Lookup table defining high-level roles a person can have
+      in relation to a title (e.g. Actor, Director).
     columns:
       - name: role_id
+        description: Primary key identifying a role.
         tests:
           - not_null
           - unique
       - name: role_name
+        description: Name of the role.
         tests:
           - not_null
           - unique

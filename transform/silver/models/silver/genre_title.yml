@@ -1,5 +1,8 @@
 models:
   - name: genre_title
+    description: >
+      Bridge table mapping titles to genres.
+      A title can belong to multiple genres.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -7,12 +10,14 @@ models:
             - title_id
     columns:
       - name: genre_id
+        description: Foreign key to the genre assigned to the title.
         tests:
           - not_null
           - relationships:
               to: ref('genre')
               field: genre_id
       - name: title_id
+        description: Foreign key to the title associated with the genre.
         tests:
           - not_null
           - relationships:

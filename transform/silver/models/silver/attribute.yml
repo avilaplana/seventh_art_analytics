@@ -1,11 +1,16 @@
 models:
   - name: attribute
+    description: >
+      Lookup table describing attributes associated with localized titles,
+      such as alternative titles, original titles, or other naming qualifiers.
     columns:
       - name: attribute_id
+        description: Primary key identifying a title attribute.
         tests:
           - not_null
           - unique
       - name: attribute_name
+        description: Human-readable name of the title attribute.
         tests:
           - not_null
           - unique

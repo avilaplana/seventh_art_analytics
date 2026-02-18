@@ -1,11 +1,16 @@
 models:
   - name: genre
+    description: >
+      Lookup table containing all possible genres that can be associated
+      with IMDb titles.
     columns:
       - name: genre_id
+        description: Primary key identifying a genre.
         tests:
           - not_null
           - unique
       - name: genre_name
+        description: Name of the genre (e.g. Drama, Comedy, Action).
         tests:
           - not_null
           - unique

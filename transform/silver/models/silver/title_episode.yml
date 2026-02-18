@@ -1,7 +1,11 @@
 models:
   - name: title_episode
+    description: >
+      Table representing episodic relationships between titles,
+      linking episodes to their parent TV series.
     columns:
       - name: title_id
+        description: Foreign key to the episode title.
         tests:
           - not_null
           - relationships:
@@ -9,6 +13,7 @@ models:
               field: title_id
               severity: warn
       - name: parent_title_id
+        description: Foreign key to the parent TV series.
         tests:
           - not_null
           - relationships:
@@ -16,4 +21,6 @@ models:
               field: title_id
               severity: warn
       - name: season_number
+        description: Season number of the episode.
       - name: episode_number
+        description: Episode number within the season.

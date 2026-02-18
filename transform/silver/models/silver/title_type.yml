@@ -1,11 +1,16 @@
 models:
   - name: title_type
+    description: >
+      Lookup table defining the type of a title,
+      such as movie, TV series, episode, or short.
     columns:
       - name: title_type_id
+        description: Primary key identifying a title type.
         tests:
           - not_null
           - unique
       - name: title_type_name
+        description: Name of the title type.
         tests:
           - not_null
           - unique

@@ -1,5 +1,8 @@
 models:
   - name: role_person
+    description: >
+      Bridge table mapping people to roles they can perform,
+      independent of a specific title.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -7,15 +10,18 @@ models:
             - person_id
     columns:
       - name: role_id
+        description: Foreign key to the role.
         tests:
           - not_null
           - relationships:
               to: ref('role')
               field: role_id
       - name: person_id
+        description: Foreign key to the person.
         tests:
           - not_null
           - relationships:
               to: ref('person')
               field: person_id
       - name: job
+        description: Specific job description associated with the role.

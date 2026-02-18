@@ -1,12 +1,19 @@
 models:
   - name: person
+    description: >
+      Master table containing people involved in titles,
+      such as actors, directors, writers, and other crew members.
     columns:
       - name: person_id
+        description: Primary key identifying a person.
         tests:
           - not_null
           - unique
       - name: name
+        description: Full name of the person.
         tests:
           - not_null
       - name: birth_year
+        description: Year the person was born.
       - name: death_year
+        description: Year the person died, if applicable.

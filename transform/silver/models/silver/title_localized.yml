@@ -1,17 +1,21 @@
 models:
   - name: title_localized
+    description: >
+      Table containing localized versions of titles by region and language,
+      including alternative and original titles.
     tests:
-        - dbt_utils.unique_combination_of_columns:
-            combination_of_columns:
-              - title_id
-              - region_id
-              - language_id
-              - attribute_id
-              - ordering
-        - distinct_region_count_matches
-        - distinct_language_count_matches
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - title_id
+            - region_id
+            - language_id
+            - attribute_id
+            - ordering
+      - distinct_region_count_matches
+      - distinct_language_count_matches
     columns:
       - name: title_id
+        description: Foreign key to the title.
         tests:
           - not_null
           - relationships:
@@ -19,26 +23,32 @@ models:
               field: title_id
               severity: warn
       - name: title
+        description: Localized title text.
         tests:
           - not_null
       - name: ordering
+        description: Ordering index when multiple localized titles exist.
         tests:
           - not_null
       - name: region_id
+        description: Region where the localized title is used.
         tests:
           - relationships:
               to: ref('regions')
               field: region_id
       - name: language_id
+        description: Language of the localized title.
         tests:
           - relationships:
               to: ref('languages')
               field: language_id
       - name: attribute_id
+        description: Attribute describing the type of localized title.
         tests:
           - relationships:
               to: ref('attribute')
               field: attribute_id
       - name: is_original_title
+        description: Indicates whether this is the original title for the region/language.
         tests:
           - not_null

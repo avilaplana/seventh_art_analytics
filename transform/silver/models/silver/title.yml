@@ -1,30 +1,42 @@
 models:
   - name: title
+    description: >
+      Core table representing IMDb titles such as movies,
+      TV series, and episodes.
     columns:
       - name: title_id
+        description: Primary key identifying a title.
         tests:
           - not_null
           - unique
       - name: title_type_id
+        description: Foreign key indicating the type of title.
         tests:
           - not_null
           - relationships:
               to: ref('title_type')
               field: title_type_id
       - name: primary_title
+        description: Main display title used by IMDb.
         tests:
           - not_null
       - name: original_title
+        description: Original title in the language of production.
         tests:
           - not_null
       - name: is_adult
+        description: Indicates whether the title is intended for adults.
         tests:
           - not_null
       - name: release_year
+        description: Year the title was first released.
       - name: duration_minutes
+        description: Runtime of the title in minutes.
       - name: average_rating
+        description: Average IMDb user rating for the title.
         tests:
           - not_null
       - name: number_of_votes
+        description: Number of user votes contributing to the average rating.
         tests:
           - not_null

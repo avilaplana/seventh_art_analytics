@@ -1,5 +1,8 @@
 models:
   - name: title_person_role
+    description: >
+      Fact table linking titles, people, and roles,
+      describing who did what on each title.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -8,27 +11,33 @@ models:
             - role_id
     columns:
       - name: title_id
+        description: Foreign key to the title.
         tests:
           - not_null
           - relationships:
               to: ref('title')
               field: title_id
       - name: person_id
+        description: Foreign key to the person.
         tests:
           - not_null
           - relationships:
               to: ref('person')
               field: person_id
       - name: role_id
+        description: Foreign key to the role.
         tests:
           - not_null
           - relationships:
               to: ref('role')
               field: role_id
       - name: job
+        description: Specific job performed by the person on the title.
       - name: number_of_roles
+        description: Number of distinct roles performed by the person in the title.
         tests:
           - not_null
       - name: characters
+        description: Character names portrayed by the person, if applicable.
         tests:
           - not_null
