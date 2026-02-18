@@ -144,6 +144,62 @@ Find all TV series (identified by having episodes) and for each series, calculat
 
 **Difficulty:** ⭐⭐⭐⭐⭐
 
+WITH metrics_series_season AS (
+	SELECT
+		te.series_title_id AS series_id,
+		te.season_number,
+		ROUND(AVG(t.average_rating),2) AS avg_rating_season
+	FROM demo.silver.title_episode te
+	JOIN demo.silver.title t
+	ON te.title_id = t.title_id
+	GROUP BY te.series_title_id, te.season_number
+),
+metrics_best_season as (
+	SELECT
+		ranked.series_id,
+		ranked.season_number AS best_season_number,
+		ranked.avg_rating_season AS best_season_rating
+	FROM
+		(SELECT
+			series_id,
+			ROW_NUMBER() OVER (PARTITION BY series_id ORDER BY avg_rating_season DESC) AS row_number,
+			avg_rating_season,
+			season_number
+		FROM metrics_series_season
+		) AS ranked
+	WHERE row_number = 1
+),
+metrics_series AS (
+	SELECT
+		t.title_id AS series_id,
+		t.primary_title,
+		COUNT(*) AS total_episodes,
+		AVG(t.duration_minutes) AS avg_episode_duration,
+		AVG(t.average_rating) AS avg_series_rating
+	FROM demo.silver.title t
+	JOIN demo.silver.title_type tp
+	ON t.title_type_id = tp.title_type_id
+	JOIN demo.silver.title_episode te
+	ON t.title_id = te.series_title_id
+	JOIN demo.silver.title t_episodes
+	ON te.title_id = t_episodes.title_id
+	WHERE tp.title_type_name = 'tvSeries'
+	GROUP BY t.title_id, t.primary_title
+)
+
+SELECT
+	ms.series_id,
+	ms.primary_title AS series_title,
+	ms.total_episodes,
+	ms.avg_episode_duration,
+	ms.avg_series_rating,
+	mbs.best_season_number,
+	mbs.best_season_rating
+FROM metrics_best_season mbs
+JOIN metrics_series ms
+ON mbs.series_id = ms.series_id
+ORDER BY avg_series_rating DESC , total_episodes DESC
+
 ---
 
 ### Question 4: Cross-Table Localization Analysis
