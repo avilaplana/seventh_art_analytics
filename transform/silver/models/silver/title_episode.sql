@@ -1,12 +1,12 @@
 SELECT
     tconst as title_id,
-    parentTconst as parent_title_id,
+    parentTconst as series_title_id,
     CASE
         WHEN seasonNumber = '\\N' THEN NULL
-        ELSE seasonNumber
-    END AS seasonNumber,
+        ELSE CAST(seasonNumber AS INT)
+    END AS season_number,
     CASE
         WHEN episodeNumber = '\\N' THEN NULL
-        ELSE episodeNumber
-    END AS episodeNumber
+        ELSE CAST(episodeNumber AS INT)
+    END AS episode_number
 FROM {{ source ('bronze', 'title_episode') }}

@@ -12,8 +12,8 @@ models:
               to: ref('title')
               field: title_id
               severity: warn
-      - name: parent_title_id
-        description: Foreign key to the parent TV series.
+      - name: series_title_id
+        description: Foreign key to the TV series title.
         tests:
           - not_null
           - relationships:
