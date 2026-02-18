@@ -1,5 +1,5 @@
 SELECT
-    tconst as title_id,
+    tconst as episode_title_id,
     parentTconst as series_title_id,
     CASE
         WHEN seasonNumber = '\\N' THEN NULL

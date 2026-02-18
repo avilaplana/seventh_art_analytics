@@ -4,7 +4,7 @@ models:
       Table representing episodic relationships between titles,
       linking episodes to their parent TV series.
     columns:
-      - name: title_id
+      - name: episode_title_id
         description: Foreign key to the episode title.
         tests:
           - not_null
