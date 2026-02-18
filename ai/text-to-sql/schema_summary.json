@@ -1,0 +1,135 @@
+{
+  "tables": [
+    {
+      "name": "attribute",
+      "description": "Lookup table describing attributes associated with localized titles, such as alternative titles, original titles, or other naming qualifiers.",
+      "columns": [
+        {"name": "attribute_id", "description": "Primary key identifying a title attribute"},
+        {"name": "attribute_name", "description": "Human-readable name of the title attribute"}
+      ]
+    },
+    {
+      "name": "genre",
+      "description": "Lookup table containing all possible genres that can be associated with IMDb titles.",
+      "columns": [
+        {"name": "genre_id", "description": "Primary key identifying a genre"},
+        {"name": "genre_name", "description": "Name of the genre (e.g. Drama, Comedy, Action)"}
+      ]
+    },
+    {
+      "name": "genre_title",
+      "description": "Bridge table mapping titles to genres. A title can belong to multiple genres.",
+      "columns": [
+        {"name": "genre_id", "description": "Foreign key to genre"},
+        {"name": "title_id", "description": "Foreign key to title"}
+      ]
+    },
+    {
+      "name": "person",
+      "description": "Master table containing people involved in titles, such as actors, directors, writers, and other crew members.",
+      "columns": [
+        {"name": "person_id", "description": "Primary key identifying a person"},
+        {"name": "name", "description": "Full name of the person"},
+        {"name": "birth_year", "description": "Year the person was born"},
+        {"name": "death_year", "description": "Year the person died, if applicable"}
+      ]
+    },
+    {
+      "name": "role",
+      "description": "Lookup table defining high-level roles a person can have in relation to a title (e.g. Actor, Director).",
+      "columns": [
+        {"name": "role_id", "description": "Primary key identifying a role"},
+        {"name": "role_name", "description": "Name of the role"}
+      ]
+    },
+    {
+      "name": "role_person",
+      "description": "Bridge table mapping people to roles they can perform, independent of a specific title.",
+      "columns": [
+        {"name": "role_id", "description": "Foreign key to role"},
+        {"name": "person_id", "description": "Foreign key to person"},
+        {"name": "job", "description": "Specific job description associated with the role"}
+      ]
+    },
+    {
+      "name": "title_type",
+      "description": "Lookup table defining the type of a title, such as movie, TV series, episode, or short.",
+      "columns": [
+        {"name": "title_type_id", "description": "Primary key identifying a title type"},
+        {"name": "title_type_name", "description": "Name of the title type"}
+      ]
+    },
+    {
+      "name": "title",
+      "description": "Core table representing IMDb titles such as movies, TV series, and episodes.",
+      "columns": [
+        {"name": "title_id", "description": "Primary key identifying a title"},
+        {"name": "title_type_id", "description": "Foreign key indicating the type of title"},
+        {"name": "primary_title", "description": "Main display title used by IMDb"},
+        {"name": "original_title", "description": "Original title in the language of production"},
+        {"name": "is_adult", "description": "Indicates whether the title is intended for adults"},
+        {"name": "release_year", "description": "Year the title was first released"},
+        {"name": "duration_minutes", "description": "Runtime of the title in minutes"},
+        {"name": "average_rating", "description": "Average IMDb user rating for the title"},
+        {"name": "number_of_votes", "description": "Number of user votes contributing to the average rating"}
+      ]
+    },
+    {
+      "name": "title_episode",
+      "description": "Table representing episodic relationships between titles, linking episodes to their parent TV series.",
+      "columns": [
+        {"name": "episode_title_id", "description": "Foreign key to the episode title"},
+        {"name": "series_title_id", "description": "Foreign key to the TV series title"},
+        {"name": "season_number", "description": "Season number of the episode"},
+        {"name": "episode_number", "description": "Episode number within the season"}
+      ]
+    },
+    {
+      "name": "title_localized",
+      "description": "Table containing localized versions of titles by region and language, including alternative and original titles.",
+      "columns": [
+        {"name": "title_id", "description": "Foreign key to the title"},
+        {"name": "title", "description": "Localized title text"},
+        {"name": "ordering", "description": "Ordering index when multiple localized titles exist"},
+        {"name": "region_id", "description": "Region where the localized title is used"},
+        {"name": "language_id", "description": "Language of the localized title"},
+        {"name": "attribute_id", "description": "Attribute describing the type of localized title"},
+        {"name": "is_original_title", "description": "Indicates whether this is the original title for the region/language"}
+      ]
+    },
+    {
+      "name": "title_person_role",
+      "description": "Fact table linking titles, people, and roles, describing who did what on each title.",
+      "columns": [
+        {"name": "title_id", "description": "Foreign key to the title"},
+        {"name": "person_id", "description": "Foreign key to the person"},
+        {"name": "role_id", "description": "Foreign key to the role"},
+        {"name": "job", "description": "Specific job performed by the person on the title"},
+        {"name": "number_of_roles", "description": "Number of distinct roles performed by the person in the title"},
+        {"name": "characters", "description": "Character names portrayed by the person, if applicable"}
+      ]
+    },
+    {
+      "name": "languages",
+      "description": "Reference table of supported language codes.",
+      "columns": [
+        {"name": "language_id", "description": "Stable surrogate key for the language"},
+        {"name": "language_code", "description": "ISO 639 language code"},
+        {"name": "iso_standard", "description": "ISO standard or classification for the language code"},
+        {"name": "language_name", "description": "English display name of the language"},
+        {"name": "notes", "description": "Additional context such as macrolanguage, historical usage, or private-use notes"}
+      ]
+    },
+    {
+      "name": "regions",
+      "description": "Reference table of regions and countries based on ISO 3166-1.",
+      "columns": [
+        {"name": "region_id", "description": "Surrogate identifier for the region"},
+        {"name": "region_code", "description": "Region or country code as received from source systems"},
+        {"name": "iso_standard", "description": "Classification of the region code standard"},
+        {"name": "region_name", "description": "Canonical English name of the region or country"},
+        {"name": "notes", "description": "Optional contextual notes describing historical status, political changes, or source-specific meaning"}
+      ]
+    }
+  ]
+}

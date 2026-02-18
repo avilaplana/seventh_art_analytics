@@ -1,0 +1,3 @@
+ollama>=0.1.0        # Ollama Python client for local LLaMA models
+rich>=13.0           # Optional, for nice console output
+python-dotenv>=1.0   # Optional, for environment variables (if needed)
