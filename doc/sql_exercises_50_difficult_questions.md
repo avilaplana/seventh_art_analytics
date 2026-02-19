@@ -32,7 +32,7 @@ Find all titles that have at least 3 different genres, include the title name, r
 
 **Difficulty:** ⭐⭐⭐⭐
 
-** Solution:**
+**Solution:**
 
 ```sql
 SELECT
@@ -63,7 +63,6 @@ For each person who has worked in at least 5 different titles, find their most c
 **Difficulty:** ⭐⭐⭐⭐⭐
 
 **Solution:**
-
 
 ```sql
 WITH person_id_with_min_votes AS (
@@ -144,6 +143,8 @@ Find all TV series (identified by having episodes) and for each series, calculat
 
 **Difficulty:** ⭐⭐⭐⭐⭐
 
+**Solution:**
+
 WITH metrics_series_season AS (
 	SELECT
 		te.series_title_id AS series_id,
@@ -209,6 +210,63 @@ For each title, find how many localized versions exist, and identify titles that
 
 **Difficulty:** ⭐⭐⭐⭐⭐
 
+**Solution:**
+
+
+WITH localization_base AS (
+    -- One row per (title, language, region)
+    SELECT
+        tl.title_id,
+        r.region_code,
+        l.language_code
+    FROM demo.silver.title_localized tl
+    JOIN demo.silver.regions r
+        ON tl.region_id = r.region_id
+    JOIN demo.silver.languages l
+        ON tl.language_id = l.language_id
+),
+
+title_agg AS (
+    -- Aggregate localization info per title
+    SELECT
+        title_id,
+        COUNT(DISTINCT language_code) AS total_localizations,
+        COLLECT_SET(
+            STRUCT(language_code, region_code)
+        ) AS available_localizations,
+        COLLECT_SET(region_code) AS available_regions
+    FROM localization_base
+    GROUP BY title_id
+),
+
+required_regions AS (
+    -- Regions that must be checked for missing localizations
+    SELECT ARRAY('US', 'UK') AS regions
+),
+
+with_missing_regions AS (
+    -- Compute which required regions are missing per title
+    SELECT
+        ta.title_id,
+        ta.total_localizations,
+        ta.available_localizations,
+        ARRAY_EXCEPT(rr.regions, ta.available_regions) AS missing_regions
+    FROM title_agg ta
+    CROSS JOIN required_regions rr
+)
+
+SELECT
+    t.title_id,
+    t.primary_title,
+    wmr.total_localizations,
+    wmr.missing_regions,
+    wmr.available_localizations
+FROM with_missing_regions wmr
+JOIN demo.silver.title t
+    ON wmr.title_id = t.title_id
+WHERE wmr.total_localizations >= 5
+  AND SIZE(wmr.missing_regions) >= 2
+
 ---
 
 ### Question 5: Multi-Level Relationship Traversal
@@ -217,6 +275,7 @@ Find all actors (role_name = 'actor') who have worked with at least 3 different 
 **Expected Output Columns:** actor_id, actor_name, director_id, director_name, collaboration_count, avg_collaboration_rating, shared_genres
 
 **Difficulty:** ⭐⭐⭐⭐⭐
+
 
 ---
 
