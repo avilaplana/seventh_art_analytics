@@ -16,7 +16,7 @@ with open("semantic_layer.json") as f:
 # -----------------------------
 def build_prompt(physical, semantic, user_query):
     return f"""
-You are a SQL expert. Generate SQL based ONLY on the following database schema.
+You are a SQL expert. Generate SQL (Spark SQL)based ONLY on the following database schema.
 Do not hallucinate tables or columns. Use the semantic layer to interpret human-friendly terms.
 
 Physical schema:
@@ -45,7 +45,7 @@ SQL:
 def generate_sql(user_query):
     prompt = build_prompt(physical_schema, semantic_layer, user_query)
     response = chat(
-        model="llama3:latest",
+        model="qwen2.5-coder",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.message.content  # This will be the SQL code
