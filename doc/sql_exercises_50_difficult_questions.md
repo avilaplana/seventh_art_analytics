@@ -278,108 +278,63 @@ Find all actors (role_name = 'actor') who have worked with at least 3 different 
 
 **Solution:**
 
-WITH actors AS (
+WITH actor_director_titles AS (
     SELECT
-        p.person_id AS actor_id,
-        tpr.title_id AS title_id
-    FROM demo.silver.person p
-    JOIN demo.silver.title_person_role tpr
-    ON p.person_id = tpr.person_id
-    JOIN demo.silver.role r
-    ON tpr.role_id = r.role_id
-    WHERE r.role_name = 'actor'
-),
-directors AS (
-    SELECT
-        p.person_id AS director_id,
-        tpr.title_id AS title_id
-    FROM demo.silver.person p
-    JOIN demo.silver.title_person_role tpr
-    ON p.person_id = tpr.person_id
-    JOIN demo.silver.role r
-    ON tpr.role_id = r.role_id
-    WHERE r.role_name = 'director'
-),
-actor_director_collaborations AS (
-    SELECT
-        a.actor_id,
-        d.director_id,
-        d.title_id
-    FROM actors a
-    JOIN directors d
-    ON a.title_id = d.title_id
-    ORDER BY a.actor_id, d.director_id
-),
-actor_director_genre AS (
-    SELECT
-        adc.actor_id,
-        adc.director_id,
-        adc.title_id,
-        g.genre_name
-    FROM actor_director_collaborations adc
+        a.person_id      AS actor_id,
+        d.person_id      AS director_id,
+        t.title_id,
+        g.genre_name,
+        t.average_rating
+    FROM demo.silver.title_person_role a
+    JOIN demo.silver.role ar
+        ON a.role_id = ar.role_id
+       AND ar.role_name = 'actor'
+    JOIN demo.silver.title_person_role d
+        ON a.title_id = d.title_id
+    JOIN demo.silver.role dr
+        ON d.role_id = dr.role_id
+       AND dr.role_name = 'director'
     JOIN demo.silver.genre_title gt
-    ON adc.title_id = gt.title_id
+        ON a.title_id = gt.title_id
     JOIN demo.silver.genre g
-    ON gt.genre_id = g.genre_id
-),
-actor_genre_directors AS (
-	SELECT
-	    actor_id,
-	    genre_name,
-	    COLLECT_SET(STRUCT(director_id, title_id)) AS directors_and_films
-	FROM actor_director_genre
-	GROUP BY actor_id, genre_name
+        ON gt.genre_id = g.genre_id
+    JOIN demo.silver.title t
+        ON a.title_id = t.title_id
 ),
 
-actor_genre_at_least_3_directors AS (
-	SELECT
-	  actor_id,
-	  genre_name,
-	  directors_and_films
-	FROM actor_genre_directors
-	WHERE SIZE(
-	  ARRAY_DISTINCT(
-	    TRANSFORM(directors_and_films, x -> x.director_id)
-	  )
-	) >= 3
-),
-
-actor_directors_genre_after_filterd AS (
-	SELECT
-	  actor_id,
-	  genre_name,
-	  d.director_id,
-	  d.title_id
-	FROM actor_genre_at_least_3_directors
-	LATERAL VIEW explode(directors_and_films) AS d
-),
-
-actor_metrics AS (
-	SELECT
-		  adg.actor_id,
-		  adg.director_id,
-		  COUNT(*) AS collaboration_count,
-		  ROUND(AVG(t.average_rating),2) AS avg_collaboration_rating,
-		  ARRAY_AGG(DISTINCT adg.genre_name) AS shared_genres
-	FROM actor_directors_genre_after_filterd adg
-	JOIN demo.silver.title t
-	ON adg.title_id = t.title_id
-	GROUP BY adg.actor_id, adg.director_id
+qualified_actor_genres AS (
+    SELECT
+        actor_id,
+        genre_name
+    FROM actor_director_titles
+    GROUP BY actor_id, genre_name
+    HAVING COUNT(DISTINCT director_id) >= 3
 )
 
 SELECT
-	am.actor_id,
-	p.name,
-	am.director_id,
-	p2.name,
-	am.collaboration_count,
-	am.avg_collaboration_rating,
-	am.shared_genres
-FROM actor_metrics am
-JOIN person p
-ON am.actor_id = p.person_id
-JOIN person p2
-ON am.director_id = p2.person_id
+    ad.actor_id,
+    pa.name AS actor_name,
+    ad.director_id,
+    pd.name AS director_name,
+    COUNT(DISTINCT ad.title_id) AS collaboration_count,
+    ROUND(AVG(ad.average_rating), 2) AS avg_collaboration_rating,
+    COLLECT_SET(ad.genre_name) AS shared_genres
+FROM actor_director_titles ad
+JOIN qualified_actor_genres q
+    ON ad.actor_id = q.actor_id
+   AND ad.genre_name = q.genre_name
+JOIN demo.silver.person pa
+    ON ad.actor_id = pa.person_id
+JOIN demo.silver.person pd
+    ON ad.director_id = pd.person_id
+GROUP BY
+    ad.actor_id,
+    pa.name,
+    ad.director_id,
+    pd.name
+ORDER BY
+    ad.actor_id,
+    ad.director_id
 
 ---
 
