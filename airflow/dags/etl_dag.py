@@ -8,8 +8,18 @@ from airflow.utils.trigger_rule import TriggerRule
 from docker.types import Mount
 from spark_utils import build_spark_submit
 from datetime import datetime, timedelta
+from datetime import datetime, timezone
 import sys
 import os
+
+# Get current UTC datetime
+now_utc = datetime.now(timezone.utc)
+
+# Current date in YYYY-MM-DD format
+snapshot_date = now_utc.date().isoformat()  # e.g., "2026-03-02"
+
+# Current UTC timestamp in YYYY-MM-DD HH:MM:SS format
+ingested_at_timestamp = now_utc.strftime("%Y-%m-%d %H:%M:%S")  # e.g., "2026-03-02 14:23:45"
 
 # Add extract src dir to path
 default_args = {
@@ -100,11 +110,11 @@ with DAG(
     spark_bronze_tasks = []
 
     for job in load_bronze_jobs:
-        spark_task_id = f"load_SPARK_bronze_{job}"
+        spark_task_id = f"load_SPARK_stage_bronze_{job}"
         spark_task = BashOperator(
             retries=0,          # fail fast on Spark job
             task_id=spark_task_id,
-            bash_command=build_spark_submit(f"{SPARK_JOBS_DIR}{job}.py")
+            bash_command=build_spark_submit(f"{SPARK_JOBS_DIR}{job}.py", snapshot_date, ingested_at_timestamp)
         )
         spark_bronze_tasks.append(spark_task)
 
@@ -118,7 +128,7 @@ with DAG(
     """
     
     dbt_deps_task = DockerOperator(
-        task_id="transform_DBT_deps",
+        task_id="transform_DBT_stage_deps",
         image="dbt-spark:f5bf2ec",
         command=dbt_deps_command,
         mounts=[
@@ -145,7 +155,7 @@ with DAG(
     """
 
     dbt_seed_task = DockerOperator(
-        task_id="transform_DBT_seed",
+        task_id="transform_DBT_stage_seed",
         image="dbt-spark:f5bf2ec",
         command=dbt_seed_command,
         mounts=[
@@ -173,7 +183,7 @@ with DAG(
     """
     
     dbt_silver_run_task = DockerOperator(
-        task_id="transform_DBT_silver_layer",
+        task_id="transform_DBT_stage_silver_layer",
         image="dbt-spark:f5bf2ec",
         command=dbt_silver_run_command,
         mounts=[
@@ -200,7 +210,7 @@ with DAG(
     """
     
     dbt_silver_validation_task = DockerOperator(
-        task_id="transform_DBT_validation_silver_layer",
+        task_id="transform_DBT_data_quality_check_stage_silver_layer",
         image="dbt-spark:f5bf2ec",
         command=dbt_silver_validation_command,
         mounts=[

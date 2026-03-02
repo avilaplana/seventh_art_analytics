@@ -1,20 +1,34 @@
-from pyspark.sql import SparkSession
+import argparse
 from s3_utils import object_path
-from pyspark.sql.functions import current_date
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import lit
 
-spark = SparkSession.builder \
-    .appName("load-title-episode-Iceberg-MinIO") \
-    .getOrCreate()
+def main(snapshot_date: str, ingested_at_timestamp: str):
+    
+    spark = SparkSession.builder \
+        .appName("load-title-episode-Iceberg-MinIO") \
+        .getOrCreate()
 
-# Read from raw data from S3
-title_episode_df = spark.read \
-    .option("header", True) \
-    .option("sep", "\t") \
-    .csv(f"s3a://{object_path}/title.episode.tsv.gz")
+    # Read from raw data from S3
+    title_episode_df = spark.read \
+        .option("header", True) \
+        .option("sep", "\t") \
+        .csv(f"s3a://{object_path}/title.episode.tsv.gz")
 
-# Load to Iceberg
-title_episode_df \
-    .withColumn("snapshot_date", current_date()) \
-    .writeTo("demo.stage_bronze.title_episode").createOrReplace()
+    # Load to Iceberg
+    title_episode_df \
+        .withColumn("snapshot_date", lit(snapshot_date)) \
+        .withColumn("ingested_at_timestamp", lit(ingested_at_timestamp)) \
+        .writeTo("demo.stage_bronze.title_episode").createOrReplace()
 
-spark.stop()
+    spark.stop()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Load title_episode to Iceberg")
+    parser.add_argument("--snapshot_date", required=True, help="Snapshot date YYYY-MM-DD")
+    parser.add_argument("--ingested_at_timestamp", required=True, help="Snapshot timestamp UTC YYYY-MM-DD HH:MM:SS")
+    
+    args = parser.parse_args()
+
+    # Call main function with the parsed arguments
+    main(args.snapshot_date, args.ingested_at_timestamp)

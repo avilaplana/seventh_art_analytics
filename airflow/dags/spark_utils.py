@@ -1,5 +1,5 @@
 
-def build_spark_submit(job):    
+def build_spark_submit(job: str, snapshot_date: str, ingested_at_timestamp: str):    
     return f"""\
 spark-submit \
 --master spark://spark-master:7077 \
@@ -25,5 +25,7 @@ spark-submit \
 org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.8.1,\
 org.apache.iceberg:iceberg-aws-bundle:1.8.1,\
 org.apache.hadoop:hadoop-aws:3.3.4 \
-{job}
+{job} \
+--snapshot_date {snapshot_date} \
+--ingested_at_timestamp "{ingested_at_timestamp}"
 """

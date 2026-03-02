@@ -25,7 +25,10 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.name_basics (
     birthYear STRING,
     deathYear STRING,
     primaryProfession STRING,
-    knownForTitles STRING
+    knownForTitles STRING,
+    snapshot_date DATE,
+    ingested_at_timestamp TIMESTAMP
+          
 ) USING iceberg
 """)
 
@@ -38,7 +41,9 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_akas (
     language STRING,
     types STRING,
     attributes STRING,
-    isOriginalTitle STRING
+    isOriginalTitle STRING,
+    snapshot_date DATE,
+    ingested_at_timestamp TIMESTAMP
 ) USING iceberg
 """)
 
@@ -52,7 +57,9 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_basics (
     startYear STRING,
     endYear STRING,
     runtimeMinutes STRING,
-    genres STRING
+    genres STRING,
+    snapshot_date DATE,
+    ingested_at_timestamp TIMESTAMP
 ) USING iceberg
 """)
 
@@ -60,7 +67,9 @@ spark.sql("""
 CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_crew (
     tconst STRING,
     directors STRING,
-    writers STRING
+    writers STRING,
+    snapshot_date DATE,
+    ingested_at_timestamp TIMESTAMP
 ) USING iceberg
 """)
 
@@ -69,7 +78,9 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_episode (
     tconst STRING,
     parentTconst STRING,
     seasonNumber STRING,
-    episodeNumber STRING
+    episodeNumber STRING,
+    snapshot_date DATE,
+    ingested_at_timestamp TIMESTAMP
 ) USING iceberg
 """)
 
@@ -80,7 +91,9 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_principals (
     nconst STRING,
     category STRING,
     job STRING,
-    characters STRING
+    characters STRING,
+    snapshot_date DATE,
+    ingested_at_timestamp TIMESTAMP
 ) USING iceberg
 """)
 
@@ -88,7 +101,9 @@ spark.sql("""
 CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_ratings (
     tconst STRING,
     averageRating STRING,
-    numVotes STRING
+    numVotes STRING,
+    snapshot_date DATE,
+    ingested_at_timestamp TIMESTAMP
 ) USING iceberg
 """)
 
