@@ -1,7 +1,7 @@
  WITH distinct_title_types AS (
     SELECT
         DISTINCT titleType AS title_type_name
-    FROM {{ source('bronze', 'title_basics') }}
+    FROM {{ source('stage_bronze', 'title_basics') }}
     ORDER BY title_type_name ASC
 )
 

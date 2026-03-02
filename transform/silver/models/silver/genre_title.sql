@@ -1,7 +1,7 @@
 WITH array_genres AS (
     SELECT SPLIT(TRIM(genres), ',') AS genres,
     tconst as title_id
-    FROM {{ source('bronze', 'title_basics') }}
+    FROM {{ source('stage_bronze', 'title_basics') }}
 ), 
 title_genre AS (
     SELECT

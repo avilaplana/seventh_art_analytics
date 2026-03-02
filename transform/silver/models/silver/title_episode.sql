@@ -9,4 +9,4 @@ SELECT
         WHEN episodeNumber = '\\N' THEN NULL
         ELSE CAST(episodeNumber AS INT)
     END AS episode_number
-FROM {{ source ('bronze', 'title_episode') }}
+FROM {{ source ('stage_bronze', 'title_episode') }}

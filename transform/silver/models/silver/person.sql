@@ -9,4 +9,4 @@ SELECT
     WHEN deathYear = '\\N' THEN NULL
     ELSE CAST(deathYear AS INT)
   END AS death_year
-FROM {{ source('bronze', 'name_basics') }}
+FROM {{ source('stage_bronze', 'name_basics') }}

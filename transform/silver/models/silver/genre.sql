@@ -1,6 +1,6 @@
 WITH array_genres AS (
     SELECT SPLIT(TRIM(genres), ',') AS genres
-    FROM {{ source('bronze', 'title_basics') }}
+    FROM {{ source('stage_bronze', 'title_basics') }}
 ), 
 
 distinct_genres AS (

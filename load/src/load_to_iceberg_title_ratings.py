@@ -14,7 +14,7 @@ ratings_df = spark.read \
 
 # Load to Iceberg
 ratings_df \
-    .withColumn("ingestion_date", current_date()) \
-    .writeTo("demo.bronze.title_ratings").createOrReplace()
+    .withColumn("snapshot_date", current_date()) \
+    .writeTo("demo.stage_bronze.title_ratings").createOrReplace()
 
 spark.stop()

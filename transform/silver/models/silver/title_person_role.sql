@@ -12,8 +12,8 @@ WITH title_principals_cleaned AS (
       WHEN tp.characters = '\\N' THEN 'NOT DEFINED'
       ELSE TRIM(REPLACE(REPLACE(REPLACE(tp.characters, '[', ''), ']', ''), '\"',''))
     END AS characters
-FROM {{ source ('bronze', 'title_principals') }} tp
-INNER JOIN {{ source ('bronze', 'name_basics') }} nb -- FILTER OUT persons that are not defined in name_basics
+FROM {{ source ('stage_bronze', 'title_principals') }} tp
+INNER JOIN {{ source ('stage_bronze', 'name_basics') }} nb -- FILTER OUT persons that are not defined in name_basics
 ON tp.nconst = nb.nconst
 ),
 

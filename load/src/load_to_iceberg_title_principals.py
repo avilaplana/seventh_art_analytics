@@ -14,7 +14,7 @@ title_principals_df = spark.read \
 
 # Load to Iceberg
 title_principals_df \
-    .withColumn("ingestion_date", current_date()) \
-    .writeTo("demo.bronze.title_principals").createOrReplace()
+    .withColumn("snapshot_date", current_date()) \
+    .writeTo("demo.stage_bronze.title_principals").createOrReplace()
 
 spark.stop()

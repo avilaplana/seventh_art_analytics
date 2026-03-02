@@ -5,7 +5,7 @@ SELECT
       WHEN attributes = '\\N' THEN NULL
       ELSE attributes
     END) AS attribute_name
-FROM {{ source('bronze', 'title_akas') }}
+FROM {{ source('stage_bronze', 'title_akas') }}
 )
 SELECT
   uuid() AS attribute_id,

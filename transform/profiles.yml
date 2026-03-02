@@ -7,7 +7,7 @@ silver:
       host: spark-thrift-server
       port: 10000
       user: dbt
-      schema: silver
+      schema: stage_silver
       connect_retries: 5
       connect_timeout: 60
       retry_all: true

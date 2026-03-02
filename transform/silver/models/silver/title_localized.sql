@@ -19,7 +19,7 @@ WITH title_akas_cleaned AS (
       WHEN isOriginalTitle = 0 THEN FALSE
       ELSE TRUE
     END AS is_original_title  
-  FROM {{ source('bronze', 'title_akas') }}
+  FROM {{ source('stage_bronze', 'title_akas') }}
 )
 
 SELECT 

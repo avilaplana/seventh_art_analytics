@@ -2,7 +2,7 @@ WITH roles_array AS (
   SELECT
     nconst AS person_id,    
     SPLIT(TRIM(primaryProfession), ',') AS roles
-  FROM {{ source('bronze', 'name_basics') }}
+  FROM {{ source('stage_bronze', 'name_basics') }}
 ),
 
 roles_person AS (

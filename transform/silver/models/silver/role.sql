@@ -1,7 +1,7 @@
 WITH roles_array AS (
   SELECT    
     SPLIT(TRIM(primaryProfession), ',') AS roles
-  FROM {{ source('bronze', 'name_basics') }}
+  FROM {{ source('stage_bronze', 'name_basics') }}
 ),
 
 roles_distinct AS (
@@ -20,7 +20,7 @@ roles_distinct AS (
 category_distinct AS (
   SELECT
     DISTINCT category AS role
-  FROM {{ source('bronze', 'title_principals') }}
+  FROM {{ source('stage_bronze', 'title_principals') }}
   ORDER BY role ASC
 ),
 
