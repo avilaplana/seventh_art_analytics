@@ -32,7 +32,7 @@ default_args = {
 }
 
 MAX_DAG_RETRIES = 3
-RETRY_COUNTER_VAR = "daily_prod_etl_medallion_retry_count"
+RETRY_COUNTER_VAR = "DAILY_SNAPSHOT_RETRY_COUNT"
 
 def should_rerun_dag(**context):
     retries = int(Variable.get(RETRY_COUNTER_VAR, default_var=0))
@@ -125,12 +125,14 @@ with DAG(
         ]
     spark_bronze_tasks = []
 
+    snapshot_try = int(Variable.get(RETRY_COUNTER_VAR, default_var=0))
+
     for job in load_bronze_jobs:
         spark_task_id = f"load_SPARK_stage_bronze_{job}"
         spark_task = BashOperator(
             retries=0,          # fail fast on Spark job
             task_id=spark_task_id,
-            bash_command=build_spark_submit(f"{SPARK_JOBS_DIR}{job}.py", snapshot_date, ingested_at_timestamp)
+            bash_command=build_spark_submit(f"{SPARK_JOBS_DIR}{job}.py", snapshot_date, ingested_at_timestamp, snapshot_try)
         )
         spark_bronze_tasks.append(spark_task)
 

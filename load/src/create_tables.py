@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.name_basics (
     primaryProfession STRING,
     knownForTitles STRING,
     snapshot_date DATE,
-    ingested_at_timestamp TIMESTAMP
-          
+    ingested_at_timestamp TIMESTAMP,
+    snapshot_try INT
 ) USING iceberg
 """)
 
@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_akas (
     attributes STRING,
     isOriginalTitle STRING,
     snapshot_date DATE,
-    ingested_at_timestamp TIMESTAMP
+    ingested_at_timestamp TIMESTAMP,
+    snapshot_try INT
 ) USING iceberg
 """)
 
@@ -59,7 +60,8 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_basics (
     runtimeMinutes STRING,
     genres STRING,
     snapshot_date DATE,
-    ingested_at_timestamp TIMESTAMP
+    ingested_at_timestamp TIMESTAMP,
+    snapshot_try INT
 ) USING iceberg
 """)
 
@@ -69,7 +71,8 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_crew (
     directors STRING,
     writers STRING,
     snapshot_date DATE,
-    ingested_at_timestamp TIMESTAMP
+    ingested_at_timestamp TIMESTAMP,
+    snapshot_try INT
 ) USING iceberg
 """)
 
@@ -80,7 +83,8 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_episode (
     seasonNumber STRING,
     episodeNumber STRING,
     snapshot_date DATE,
-    ingested_at_timestamp TIMESTAMP
+    ingested_at_timestamp TIMESTAMP,
+    snapshot_try INT
 ) USING iceberg
 """)
 
@@ -93,7 +97,8 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_principals (
     job STRING,
     characters STRING,
     snapshot_date DATE,
-    ingested_at_timestamp TIMESTAMP
+    ingested_at_timestamp TIMESTAMP,
+    snapshot_try INT
 ) USING iceberg
 """)
 
@@ -103,7 +108,8 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_ratings (
     averageRating STRING,
     numVotes STRING,
     snapshot_date DATE,
-    ingested_at_timestamp TIMESTAMP
+    ingested_at_timestamp TIMESTAMP,
+    snapshot_try INT
 ) USING iceberg
 """)
 

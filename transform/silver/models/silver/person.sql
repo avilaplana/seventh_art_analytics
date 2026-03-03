@@ -10,5 +10,6 @@ SELECT
     ELSE CAST(deathYear AS INT)
   END AS death_year,
   CAST(snapshot_date AS DATE) AS snapshot_date,
-  CAST(ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp  
+  CAST(ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
+  snapshot_try
 FROM {{ source('stage_bronze', 'name_basics') }}

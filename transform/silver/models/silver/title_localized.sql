@@ -20,7 +20,8 @@ WITH title_akas_cleaned AS (
       ELSE TRUE
     END AS is_original_title,
     CAST(snapshot_date AS DATE) AS snapshot_date,
-    CAST(ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp
+    CAST(ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
+    snapshot_try
   FROM {{ source('stage_bronze', 'title_akas') }}
 )
 
@@ -33,7 +34,8 @@ SELECT
   aa.attribute_id,
   tac.is_original_title,
   tac.snapshot_date,
-  tac.ingested_at_timestamp
+  tac.ingested_at_timestamp,
+  tac.snapshot_try
 FROM title_akas_cleaned tac
 LEFT JOIN {{ ref('regions') }} rr
 ON tac.region_code = rr.region_code

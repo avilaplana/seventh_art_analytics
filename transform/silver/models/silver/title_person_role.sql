@@ -13,7 +13,8 @@ WITH title_principals_cleaned AS (
       ELSE TRIM(REPLACE(REPLACE(REPLACE(tp.characters, '[', ''), ']', ''), '\"',''))
     END AS characters,
     CAST(tp.snapshot_date AS DATE) AS snapshot_date,
-    CAST(tp.ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp   
+    CAST(tp.ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
+    tp.snapshot_try   
 FROM {{ source ('stage_bronze', 'title_principals') }} tp
 INNER JOIN {{ source ('stage_bronze', 'name_basics') }} nb -- FILTER OUT persons that are not defined in name_basics
 ON tp.nconst = nb.nconst
@@ -28,7 +29,8 @@ title_principals_with_map AS (
       COUNT(*) AS number_of_roles,
       map_from_entries(collect_set(struct(ordering, characters))) AS characters,
       snapshot_date,
-      ingested_at_timestamp
+      ingested_at_timestamp,
+      snapshot_try
   FROM title_principals_cleaned
   GROUP BY
       title_id,
@@ -36,7 +38,8 @@ title_principals_with_map AS (
       category,
       job,
       snapshot_date,
-      ingested_at_timestamp
+      ingested_at_timestamp,
+      snapshot_try
 )
 
 SELECT
@@ -47,7 +50,8 @@ SELECT
     tpwm.number_of_roles,
     tpwm.characters,
     tpwm.snapshot_date,
-    tpwm.ingested_at_timestamp
+    tpwm.ingested_at_timestamp,
+    tpwm.snapshot_try
 FROM title_principals_with_map tpwm
 LEFT JOIN {{ ref('role') }} r
 ON tpwm.category = r.role_name
