@@ -1,0 +1,263 @@
+dataset: movie_sql_eval
+version: 1.0
+engine: spark_sql
+storage: iceberg
+execution: thrift_server
+
+catalog: demo
+schema: stage_silver
+
+global_assumptions:
+  - "Movie means title_type.title_type_name = 'movie'"
+  - "Ratings and votes are stored as strings and must be CAST"
+  - "Country and language filters apply via title_localized"
+  - "Multiple genres imply AND semantics"
+  - "Booleans use true/false"
+  - "Case-insensitive search uses LOWER() LIKE"
+  - "Relative years use YEAR(current_date())"
+
+questions:
+
+################################
+# SIMPLE
+################################
+
+- id: simple_01
+  difficulty: simple
+  natural_language: "List the 10 highest-rated movies released in 2020."
+  sql: |
+    SELECT
+      t.primary_title,
+      CAST(t.average_rating AS DOUBLE) AS average_rating
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    WHERE tt.title_type_name = 'movie'
+      AND t.release_year = 2020
+      AND t.average_rating IS NOT NULL
+    ORDER BY CAST(t.average_rating AS DOUBLE) DESC
+    LIMIT 10;
+
+- id: simple_02
+  difficulty: simple
+  natural_language: "Show all movies released in 1999 with a rating of at least 8 out of 10."
+  sql: |
+    SELECT
+      t.primary_title,
+      CAST(t.average_rating AS DOUBLE) AS average_rating
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    WHERE tt.title_type_name = 'movie'
+      AND t.release_year = 1999
+      AND CAST(t.average_rating AS DOUBLE) >= 8;
+
+- id: simple_03
+  difficulty: simple
+  natural_language: "Find the details of the movie titled ‘Inception’."
+  sql: |
+    SELECT t.*
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    WHERE tt.title_type_name = 'movie'
+      AND t.primary_title = 'Inception';
+
+- id: simple_04
+  difficulty: simple
+  natural_language: "List all movies released after 2015 that are marked as adult content."
+  sql: |
+    SELECT t.primary_title, t.release_year
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    WHERE tt.title_type_name = 'movie'
+      AND t.release_year > 2015
+      AND t.is_adult = true;
+
+- id: simple_05
+  difficulty: simple
+  natural_language: "Show all movies that have a runtime longer than 150 minutes."
+  sql: |
+    SELECT t.primary_title, t.duration_minutes
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    WHERE tt.title_type_name = 'movie'
+      AND t.duration_minutes > 150;
+
+- id: simple_06
+  difficulty: simple
+  natural_language: "Find all titles released in Spain in the Spanish language."
+  sql: |
+    SELECT DISTINCT t.primary_title
+    FROM demo.silver.title t
+    JOIN demo.silver.title_localized tl
+      ON t.title_id = tl.title_id
+    JOIN demo.silver.regions r
+      ON tl.region_id = r.region_id
+    JOIN demo.silver.languages l
+      ON tl.language_id = l.language_id
+    WHERE r.region_name = 'Spain'
+      AND l.language_name = 'Spanish';
+
+- id: simple_07
+  difficulty: simple
+  natural_language: "List all movies that have no user rating yet."
+  sql: |
+    SELECT t.primary_title
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    WHERE tt.title_type_name = 'movie'
+      AND t.average_rating IS NULL;
+
+- id: simple_08
+  difficulty: simple
+  natural_language: "Show all titles released in 2023 along with their primary title and release year."
+  sql: |
+    SELECT t.primary_title, t.release_year
+    FROM demo.silver.title t
+    WHERE t.release_year = 2023;
+
+- id: simple_09
+  difficulty: simple
+  natural_language: "List the first 20 titles in the catalog ordered by release year ascending."
+  sql: |
+    SELECT t.primary_title, t.release_year
+    FROM demo.silver.title t
+    ORDER BY t.release_year ASC
+    LIMIT 20;
+
+- id: simple_10
+  difficulty: simple
+  natural_language: "Show all movies whose primary title contains the word ‘Star’."
+  sql: |
+    SELECT t.primary_title
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    WHERE tt.title_type_name = 'movie'
+      AND LOWER(t.primary_title) LIKE '%star%';
+
+################################
+# MEDIUM
+################################
+
+- id: medium_01
+  difficulty: medium
+  natural_language: "For each genre, what is the average rating of movies released after 2010?"
+  sql: |
+    SELECT
+      g.genre_name,
+      AVG(CAST(t.average_rating AS DOUBLE)) AS avg_rating
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    JOIN demo.silver.genre_title gt
+      ON t.title_id = gt.title_id
+    JOIN demo.silver.genre g
+      ON gt.genre_id = g.genre_id
+    WHERE tt.title_type_name = 'movie'
+      AND t.release_year > 2010
+      AND t.average_rating IS NOT NULL
+    GROUP BY g.genre_name;
+
+- id: medium_02
+  difficulty: medium
+  natural_language: "List the top 10 highest-rated action movies of all time."
+  sql: |
+    SELECT
+      t.primary_title,
+      CAST(t.average_rating AS DOUBLE) AS average_rating
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    JOIN demo.silver.genre_title gt
+      ON t.title_id = gt.title_id
+    JOIN demo.silver.genre g
+      ON gt.genre_id = g.genre_id
+    WHERE tt.title_type_name = 'movie'
+      AND g.genre_name = 'Action'
+      AND t.average_rating IS NOT NULL
+    ORDER BY CAST(t.average_rating AS DOUBLE) DESC
+    LIMIT 10;
+
+- id: medium_03
+  difficulty: medium
+  natural_language: "For each year since 2000, how many movies were released?"
+  sql: |
+    SELECT
+      t.release_year,
+      COUNT(*) AS movie_count
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    WHERE tt.title_type_name = 'movie'
+      AND t.release_year >= 2000
+    GROUP BY t.release_year
+    ORDER BY t.release_year;
+
+- id: medium_04
+  difficulty: medium
+  natural_language: "Show the 20 most recent movies along with their average rating and number of votes."
+  sql: |
+    SELECT
+      t.primary_title,
+      t.release_year,
+      CAST(t.average_rating AS DOUBLE) AS average_rating,
+      CAST(t.number_of_votes AS BIGINT) AS number_of_votes
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    WHERE tt.title_type_name = 'movie'
+    ORDER BY t.release_year DESC
+    LIMIT 20;
+
+- id: medium_05
+  difficulty: medium
+  natural_language: "List all movies that belong to both the ‘Action’ and ‘Adventure’ genres."
+  sql: |
+    SELECT t.primary_title
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    JOIN demo.silver.genre_title gt
+      ON t.title_id = gt.title_id
+    JOIN demo.silver.genre g
+      ON gt.genre_id = g.genre_id
+    WHERE tt.title_type_name = 'movie'
+      AND g.genre_name IN ('Action', 'Adventure')
+    GROUP BY t.title_id, t.primary_title
+    HAVING COUNT(DISTINCT g.genre_name) = 2;
+
+################################
+# HARD (sample)
+################################
+
+- id: hard_01
+  difficulty: hard
+  natural_language: >
+    Find the top 5 actors with the highest average movie rating in the last 5 years,
+    considering only movies where they had at least 5 such movies.
+  sql: |
+    SELECT
+      p.name,
+      AVG(CAST(t.average_rating AS DOUBLE)) AS avg_rating
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt
+      ON t.title_type_id = tt.title_type_id
+    JOIN demo.silver.title_person_role tpr
+      ON t.title_id = tpr.title_id
+    JOIN demo.silver.person p
+      ON tpr.person_id = p.person_id
+    JOIN demo.silver.role r
+      ON tpr.role_id = r.role_id
+    WHERE tt.title_type_name = 'movie'
+      AND r.role_name IN ('actor', 'actress')
+      AND t.release_year >= YEAR(current_date()) - 5
+      AND t.average_rating IS NOT NULL
+    GROUP BY p.name
+    HAVING COUNT(*) >= 5
+    ORDER BY avg_rating DESC
+    LIMIT 5;
