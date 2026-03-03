@@ -5,6 +5,8 @@ from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.models import Variable
 from airflow.exceptions import AirflowSkipException
 from airflow.utils.trigger_rule import TriggerRule
+from airflow.sensors.time_delta import TimeDeltaSensor
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from docker.types import Mount
 from spark_utils import build_spark_submit
 from datetime import datetime, timedelta
@@ -28,6 +30,20 @@ default_args = {
     "retries": 1,
     "retry_delay": timedelta(minutes=5),
 }
+
+MAX_DAG_RETRIES = 3
+RETRY_COUNTER_VAR = "daily_prod_etl_medallion_retry_count"
+
+def should_rerun_dag(**context):
+    retries = int(Variable.get(RETRY_COUNTER_VAR, default_var=0))
+
+    if retries >= MAX_DAG_RETRIES:
+        raise AirflowSkipException("Max DAG retries reached")
+
+    Variable.set(RETRY_COUNTER_VAR, retries + 1)
+
+def reset_dag_retry_counter(**context):
+    Variable.set(RETRY_COUNTER_VAR, 0)
 
 ##################################################
 # FEATURE FLAG
@@ -226,6 +242,34 @@ with DAG(
         tty=True,
         mount_tmp_dir=False,
     )
+
+    ############################################
+    # Step 7: Retry whole DAG on validation failure
+    ############################################
+
+    wait_30_minutes = TimeDeltaSensor(
+        task_id="wait_30_minutes_before_dag_retry",
+        delta=timedelta(minutes=30),
+        trigger_rule=TriggerRule.ONE_FAILED,
+    )
+
+    check_retry_limit = PythonOperator(
+        task_id="check_dag_retry_limit",
+        python_callable=should_rerun_dag,
+    )
+
+    restart_dag = TriggerDagRunOperator(
+        task_id="restart_entire_dag",
+        trigger_dag_id="daily_prod_etl_medallion",
+        wait_for_completion=False,
+        reset_dag_run=True,
+    )
+
+    reset_retry_counter = PythonOperator(
+    task_id="reset_dag_retry_counter",
+    python_callable=reset_dag_retry_counter,
+    trigger_rule=TriggerRule.ALL_SUCCESS,
+)
    
     extract_tasks >> spark_bronze_tasks[0]
 
@@ -236,3 +280,10 @@ with DAG(
         dbt_seed_task >> \
         dbt_silver_run_task >> \
         dbt_silver_validation_task
+
+    # Success path → reset retry counter
+    dbt_silver_validation_task >> reset_retry_counter
+
+    # Failure path → wait → retry DAG
+    dbt_silver_validation_task >> wait_30_minutes
+    wait_30_minutes >> check_retry_limit >> restart_dag
