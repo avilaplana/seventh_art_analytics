@@ -18,7 +18,9 @@ WITH title_akas_cleaned AS (
     CASE
       WHEN isOriginalTitle = 0 THEN FALSE
       ELSE TRUE
-    END AS is_original_title  
+    END AS is_original_title,
+    CAST(snapshot_date AS DATE) AS snapshot_date,
+    CAST(ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp
   FROM {{ source('stage_bronze', 'title_akas') }}
 )
 
@@ -29,7 +31,9 @@ SELECT
   rr.region_id,
   ll.language_id,
   aa.attribute_id,
-  tac.is_original_title
+  tac.is_original_title,
+  tac.snapshot_date,
+  tac.ingested_at_timestamp
 FROM title_akas_cleaned tac
 LEFT JOIN {{ ref('regions') }} rr
 ON tac.region_code = rr.region_code

@@ -4,11 +4,15 @@ SELECT
     CASE
       WHEN attributes = '\\N' THEN NULL
       ELSE attributes
-    END) AS attribute_name
+    END) AS attribute_name,
+    CAST(snapshot_date AS DATE),
+    CAST(ingested_at_timestamp AS TIMESTAMP)    
 FROM {{ source('stage_bronze', 'title_akas') }}
 )
 SELECT
   uuid() AS attribute_id,
-  attribute_name
+  attribute_name,
+  snapshot_date,
+  ingested_at_timestamp
 FROM unique_attribute
 WHERE attribute_name IS NOT NULL
