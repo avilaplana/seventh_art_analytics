@@ -150,7 +150,7 @@ questions:
   sql: |
     SELECT
       g.genre_name,
-      AVG(CAST(t.average_rating AS DOUBLE)) AS avg_rating
+      ROUND(AVG(CAST(t.average_rating AS DOUBLE)),2) AS avg_rating
     FROM demo.silver.title t
     JOIN demo.silver.title_type tt
       ON t.title_type_id = tt.title_type_id
@@ -169,18 +169,18 @@ questions:
   sql: |
     SELECT
       t.primary_title,
-      CAST(t.average_rating AS DOUBLE) AS average_rating
-    FROM demo.silver.title t
-    JOIN demo.silver.title_type tt
+      ROUND(CAST(t.average_rating AS DOUBLE),2) AS average_rating
+    FROM demo.stage_silver.title t
+    JOIN demo.stage_silver.title_type tt
       ON t.title_type_id = tt.title_type_id
-    JOIN demo.silver.genre_title gt
+    JOIN demo.stage_silver.genre_title gt
       ON t.title_id = gt.title_id
-    JOIN demo.silver.genre g
+    JOIN demo.stage_silver.genre g
       ON gt.genre_id = g.genre_id
     WHERE tt.title_type_name = 'movie'
       AND g.genre_name = 'Action'
       AND t.average_rating IS NOT NULL
-    ORDER BY CAST(t.average_rating AS DOUBLE) DESC
+    ORDER BY average_rating DESC
     LIMIT 10;
 
 - id: medium_03
@@ -211,6 +211,7 @@ questions:
     JOIN demo.silver.title_type tt
       ON t.title_type_id = tt.title_type_id
     WHERE tt.title_type_name = 'movie'
+    AND t.release_year <= YEAR(CURRENT_DATE())
     ORDER BY t.release_year DESC
     LIMIT 20;
 
@@ -231,33 +232,268 @@ questions:
     GROUP BY t.title_id, t.primary_title
     HAVING COUNT(DISTINCT g.genre_name) = 2;
 
-################################
-# HARD (sample)
-################################
+
+- id: medium_06
+  difficulty: medium
+  natural_language: "Find the top 10 movies by rating that were released in the United States."
+  gold_sql: |
+    SELECT 
+    	t.primary_title, 
+    	ROUND(CAST(t.average_rating AS DOUBLE), 2) AS average_rating
+    FROM demo.silver.title t
+    JOIN demo.silver.title_localized tl ON t.title_id = tl.title_id
+    JOIN demo.silver.regions r ON tl.region_id = r.region_id
+    WHERE r.region_name = 'United States'
+      AND t.average_rating IS NOT NULL
+    ORDER BY CAST(t.average_rating AS DOUBLE) DESC
+    LIMIT 10;
+
+- id: medium_07
+  difficulty: medium
+  natural_language: "For each genre, show the number of movies with a rating below 5."
+  gold_sql: |
+    SELECT g.genre_name, COUNT(*) AS low_rated_movies
+    FROM demo.silver.title t
+    JOIN demo.silver.genre_title gt ON t.title_id = gt.title_id
+    JOIN demo.silver.genre g ON gt.genre_id = g.genre_id
+    WHERE CAST(t.average_rating AS DOUBLE) < 5
+    GROUP BY g.genre_name;
+
+- id: medium_08
+  difficulty: medium
+  natural_language: "List all movies with an average rating above 8 that have received at least 10,000 votes."
+  gold_sql: |
+    SELECT t.primary_title
+    FROM demo.silver.title t
+    WHERE CAST(t.average_rating AS DOUBLE) > 8
+      AND CAST(t.number_of_votes AS BIGINT) >= 10000;
+
+- id: medium_09
+  difficulty: medium
+  natural_language: "Show the top 10 ‘Comedy’ movies released between 2010 and 2020 by rating."
+  gold_sql: |
+    SELECT t.primary_title, ROUND(CAST(t.average_rating AS DOUBLE),2) AS average_rating
+    FROM demo.silver.title t
+    JOIN demo.silver.genre_title gt ON t.title_id = gt.title_id
+    JOIN demo.silver.genre g ON gt.genre_id = g.genre_id
+    WHERE g.genre_name = 'Comedy'
+      AND t.release_year BETWEEN 2010 AND 2020
+      AND t.average_rating IS NOT NULL
+    ORDER BY average_rating DESC
+    LIMIT 10;
+
+- id: medium_10
+  difficulty: medium
+  natural_language: "For each year, show the number of new titles and the average rating of those titles."
+  gold_sql: |
+    SELECT t.release_year,
+           COUNT(*) AS title_count,
+           ROUND(AVG(CAST(t.average_rating AS DOUBLE)),2) AS avg_rating
+    FROM demo.silver.title t
+    WHERE t.average_rating IS NOT NULL
+    GROUP BY t.release_year
+    ORDER BY t.release_year;
+
+################
+# HARD (10)
+################
 
 - id: hard_01
   difficulty: hard
-  natural_language: >
-    Find the top 5 actors with the highest average movie rating in the last 5 years,
-    considering only movies where they had at least 5 such movies.
-  sql: |
-    SELECT
-      p.name,
-      AVG(CAST(t.average_rating AS DOUBLE)) AS avg_rating
+  natural_language: "Find the top 5 actors with the highest average movie rating in the last 5 years, considering only movies where they had a leading role and at least 5 such movies."
+  gold_sql: |
+    SELECT 
+      p.name, 
+      ROUND(AVG(CAST(t.average_rating AS DOUBLE)),2) AS avg_rating
     FROM demo.silver.title t
-    JOIN demo.silver.title_type tt
-      ON t.title_type_id = tt.title_type_id
-    JOIN demo.silver.title_person_role tpr
-      ON t.title_id = tpr.title_id
-    JOIN demo.silver.person p
-      ON tpr.person_id = p.person_id
-    JOIN demo.silver.role r
-      ON tpr.role_id = r.role_id
-    WHERE tt.title_type_name = 'movie'
-      AND r.role_name IN ('actor', 'actress')
+    JOIN demo.silver.title_person_role tpr ON t.title_id = tpr.title_id
+    JOIN demo.silver.title_type tt ON t.title_type_id = tt.title_type_id
+    JOIN demo.silver.person p ON tpr.person_id = p.person_id
+    JOIN demo.silver.role r ON tpr.role_id = r.role_id
+    WHERE r.role_name IN ('actor', 'actress')
+      AND tt.title_type_name = 'movie'
       AND t.release_year >= YEAR(current_date()) - 5
       AND t.average_rating IS NOT NULL
     GROUP BY p.name
     HAVING COUNT(*) >= 5
     ORDER BY avg_rating DESC
     LIMIT 5;
+
+- id: hard_02
+  difficulty: hard
+  natural_language: "For each genre, list the top 3 movies by rating released in the last 10 years."
+  gold_sql: |
+    SELECT genre_name, primary_title, release_year, average_rating
+    FROM (
+      SELECT g.genre_name,
+             t.primary_title,
+             t.release_year,
+             CAST(t.average_rating AS DOUBLE) AS average_rating,
+             ROW_NUMBER() OVER (
+               PARTITION BY g.genre_name
+               ORDER BY CAST(t.average_rating AS DOUBLE) DESC
+             ) AS rn
+      FROM demo.silver.title t
+      JOIN demo.silver.genre_title gt ON t.title_id = gt.title_id
+      JOIN demo.silver.genre g ON gt.genre_id = g.genre_id
+      WHERE t.release_year >= YEAR(current_date()) - 10
+        AND t.average_rating IS NOT NULL
+    ) ranked
+    WHERE rn <= 3;
+
+- id: hard_03
+  difficulty: hard
+  natural_language: "Find the directors whose movies have the highest average rating, considering only directors with at least 10 movies."
+  gold_sql: |
+    SELECT 
+    	p.name, 
+    	ROUND(AVG(CAST(t.average_rating AS DOUBLE)),2) AS avg_rating
+    FROM demo.stage_silver.title t
+    JOIN demo.stage_silver.title_type tt on t.title_type_id = tt.title_type_id
+    JOIN demo.stage_silver.title_person_role tpr ON t.title_id = tpr.title_id
+    JOIN demo.stage_silver.person p ON tpr.person_id = p.person_id
+    JOIN demo.stage_silver.role r ON tpr.role_id = r.role_id
+    WHERE r.role_name = 'director'
+      AND t.average_rating IS NOT NULL
+      AND tt.title_type_name = 'movie'
+    GROUP BY p.name
+    HAVING COUNT(*) >= 10
+    ORDER BY avg_rating DESC;
+
+- id: hard_04
+  difficulty: hard
+  natural_language: "For each year in the last 20 years, find the genre with the highest average rating."
+  gold_sql: |
+    SELECT release_year, genre_name, avg_rating
+    FROM (
+      SELECT t.release_year,
+             g.genre_name,
+             AVG(CAST(t.average_rating AS DOUBLE)) AS avg_rating,
+             ROW_NUMBER() OVER (
+               PARTITION BY t.release_year
+               ORDER BY AVG(CAST(t.average_rating AS DOUBLE)) DESC
+             ) AS rn
+      FROM demo.silver.title t
+      JOIN demo.silver.genre_title gt ON t.title_id = gt.title_id
+      JOIN demo.silver.genre g ON gt.genre_id = g.genre_id
+      WHERE t.release_year >= YEAR(current_date()) - 20
+        AND t.average_rating IS NOT NULL
+      GROUP BY t.release_year, g.genre_name
+    ) ranked
+    WHERE rn = 1;
+
+- id: hard_05
+  difficulty: hard
+  natural_language: "Find the top 10 actors by total number of votes across all movies they have acted in."
+  gold_sql: |
+    SELECT 
+    	p.name, 
+    	SUM(CAST(t.number_of_votes AS BIGINT)) AS total_votes
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt ON t.title_type_id = tt.title_type_id
+    JOIN demo.silver.title_person_role tpr ON t.title_id = tpr.title_id
+    JOIN demo.silver.person p ON tpr.person_id = p.person_id
+    JOIN demo.silver.role r ON tpr.role_id = r.role_id
+    WHERE r.role_name IN ('actor', 'actress')
+      AND tt.title_type_name = 'movie'	
+      AND t.number_of_votes IS NOT NULL
+    GROUP BY p.name
+    ORDER BY total_votes DESC
+    LIMIT 10;
+
+- id: hard_06
+  difficulty: hard
+  natural_language: "For each genre, compute the share of movies that are adult content and show only genres where this share is above 20%."
+  gold_sql: |
+    SELECT g.genre_name,
+           SUM(CASE WHEN t.is_adult = true THEN 1 ELSE 0 END) / COUNT(*) AS adult_share
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt ON t.title_type_id = tt.title_type_id
+    JOIN demo.silver.genre_title gt ON t.title_id = gt.title_id
+    JOIN demo.silver.genre g ON gt.genre_id = g.genre_id
+    WHERE tt.title_type_name = 'movie'
+    GROUP BY g.genre_name
+    HAVING adult_share > 0.2;
+
+- id: hard_07
+  difficulty: hard
+  natural_language: "Find all movies that feature both ‘Leonardo DiCaprio’ and ‘Kate Winslet’ and list their titles and release years."
+  gold_sql: |
+    SELECT t.primary_title, t.release_year
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt ON t.title_type_id = tt.title_type_id    
+    JOIN demo.silver.title_person_role tpr ON t.title_id = tpr.title_id
+    JOIN demo.silver.person p ON tpr.person_id = p.person_id
+    WHERE p.name IN ('Leonardo DiCaprio', 'Kate Winslet') AND tt.title_type_name = 'movie'
+    GROUP BY t.title_id, t.primary_title, t.release_year
+    HAVING COUNT(DISTINCT p.name) = 2;
+
+- id: hard_08
+  difficulty: hard
+  natural_language: "For each actor, compute the number of movies they appeared in before 2000 and after 2000, and show only actors who have at least 5 movies in each period."
+  gold_sql: |
+    SELECT p.name,
+           SUM(CASE WHEN t.release_year < 2000 THEN 1 ELSE 0 END) AS before_2000,
+           SUM(CASE WHEN t.release_year >= 2000 THEN 1 ELSE 0 END) AS after_2000
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt ON t.title_type_id = tt.title_type_id    
+    JOIN demo.silver.title_person_role tpr ON t.title_id = tpr.title_id
+    JOIN demo.silver.person p ON tpr.person_id = p.person_id
+    JOIN demo.silver.role r ON tpr.role_id = r.role_id
+    WHERE r.role_name IN ('actor', 'actress') AND tt.title_type_name = 'movie'
+    GROUP BY p.name
+    HAVING before_2000 >= 5 AND after_2000 >= 5;
+
+- id: hard_09
+  difficulty: hard
+  natural_language: "Find the top 10 movies that improved the most in rating compared to the average rating of movies released in the same year and genre."
+  gold_sql: |
+    WITH yearly_genre_avg AS (
+      SELECT t.release_year,
+             g.genre_id,
+             ROUND(AVG(CAST(t.average_rating AS DOUBLE)),2) AS avg_rating
+      FROM demo.silver.title t
+      JOIN demo.silver.title_type tt ON t.title_type_id = tt.title_type_id
+      JOIN demo.silver.genre_title gt ON t.title_id = gt.title_id
+      JOIN demo.silver.genre g ON gt.genre_id = g.genre_id
+      WHERE t.average_rating IS NOT NULL AND tt.title_type_name = 'movie'
+      GROUP BY t.release_year, g.genre_id
+    )
+    SELECT t.primary_title,
+           t.release_year,
+           CAST(t.average_rating AS DOUBLE) - yga.avg_rating AS rating_improvement
+    FROM demo.silver.title t
+    JOIN demo.silver.title_type tt ON t.title_type_id = tt.title_type_id
+    JOIN demo.silver.genre_title gt ON t.title_id = gt.title_id
+    JOIN yearly_genre_avg yga ON t.release_year = yga.release_year AND gt.genre_id = yga.genre_id
+    WHERE t.average_rating IS NOT NULL AND tt.title_type_name = 'movie'
+    ORDER BY rating_improvement DESC
+    LIMIT 10;
+
+- id: hard_10
+  difficulty: hard
+  natural_language: "For each of the last 5 years, list the top 3 directors by average rating of their movies in that year, considering only directors with at least 3 movies for that year."
+  gold_sql: |
+    SELECT release_year, name, avg_rating
+    FROM (
+      SELECT t.release_year,
+             p.name,
+             ROUND(AVG(CAST(t.average_rating AS DOUBLE)),2) AS avg_rating,
+             COUNT(*) AS movie_count,
+             ROW_NUMBER() OVER (
+               PARTITION BY t.release_year
+               ORDER BY AVG(CAST(t.average_rating AS DOUBLE)) DESC
+             ) AS rn
+      FROM demo.silver.title t
+      JOIN demo.silver.title_type tt ON t.title_type_id = tt.title_type_id
+      JOIN demo.silver.title_person_role tpr ON t.title_id = tpr.title_id
+      JOIN demo.silver.person p ON tpr.person_id = p.person_id
+      JOIN demo.silver.role r ON tpr.role_id = r.role_id
+      WHERE r.role_name = 'director'
+        AND t.release_year >= YEAR(current_date()) - 5
+        AND t.average_rating IS NOT NULL
+        AND tt.title_type_name = 'movie'
+      GROUP BY t.release_year, p.name
+      HAVING COUNT(*) >= 3
+    ) ranked
+    WHERE rn <= 3;
