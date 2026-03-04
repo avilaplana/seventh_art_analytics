@@ -1,18 +1,18 @@
 from .state import RunnerState
 from . import capabilities
 
-def generate_node(state: RunnerState) -> dict:
-    sql = capabilities.generate_sql(state["user_query"], state["model"], state["version"])
+def generate_sql_query_by_LLM(state: RunnerState) -> dict:
+    sql = capabilities.generate_sql_query_by_LLM(state["user_query"], state["model"], state["version"])
     return {"sql": sql, "error": None}
 
-def execute_node(state: RunnerState) -> dict:
+def execute_sql_query(state: RunnerState) -> dict:
     try:
-        result = capabilities.execute_sql(state["sql"])
+        result = capabilities.execute_sql_query(state["sql"])
         return {"result": result, "error": None}
     except Exception as e:
         return {"error": str(e)}
 
-def repair_node(state: RunnerState) -> dict:
+def repair_sql_query(state: RunnerState) -> dict:
     history = state["history"] + [{"sql": state["sql"], "error": state["error"]}]
     sql = capabilities.retry_sql(state["user_query"], history)
     return {
@@ -22,7 +22,7 @@ def repair_node(state: RunnerState) -> dict:
         "error": None,
     }
 
-def clean_sql_node(state: RunnerState) -> dict:
+def sanitize_sql_query(state: RunnerState) -> dict:
     """
     Strip ```sql blocks, leading/trailing whitespace, etc.
     """

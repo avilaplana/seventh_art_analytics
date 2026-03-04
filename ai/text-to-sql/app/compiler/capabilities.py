@@ -31,7 +31,7 @@ LLM_CLIENT = Client(host="http://host.docker.internal:11434")
 # -----------------------------
 # Functions
 # -----------------------------
-def generate_sql(user_query: str, model: str, version: int) -> str:
+def generate_sql_query_by_LLM(user_query: str, model: str, version: int) -> str:
 
     # Load YAML
     with open(f"/usr/app/ai/eval/version_control/{model}/eval_config_v{version}.yml", "r") as f:
@@ -64,7 +64,7 @@ def generate_sql(user_query: str, model: str, version: int) -> str:
     return response["message"]["content"].strip()
 
 
-def execute_sql(sql: str) -> Dict[str, Any]:
+def execute_sql_query(sql: str) -> Dict[str, Any]:
     cursor = SPARK_CLIENT.cursor()
     cursor.execute(sql)
     columns = [desc[0] for desc in cursor.description]
