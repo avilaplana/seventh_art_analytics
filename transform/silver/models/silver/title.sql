@@ -16,8 +16,8 @@ SELECT
     WHEN tb.runtimeMinutes = '\\N' THEN NULL
     ELSE CAST(tb.runtimeMinutes AS INT)
     END AS duration_minutes,
-        COALESCE(tr.averageRating, 0) AS average_rating,
-        COALESCE(tr.numVotes, 0) AS number_of_votes,
+        CAST(COALESCE(tr.averageRating, 0) AS DOUBLE) AS average_rating,
+        CAST(COALESCE(tr.numVotes, 0) AS INT) AS number_of_votes,
     CAST(tb.snapshot_date AS DATE) AS snapshot_date,
     CAST(tb.ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
     tb.snapshot_try
