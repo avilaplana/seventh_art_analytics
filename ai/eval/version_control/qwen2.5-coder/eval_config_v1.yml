@@ -2,7 +2,7 @@ eval_config:
   version: 1
   model: "qwen2.5-coder:7b"  
   description: >
-    Baseline config: full silver schema, initial semantic layer,
+    Baseline config: full canonical schema, initial semantic layer,
     base prompt without examples, low temperature for deterministic SQL.
   window_size: 16384
   prompt_templates:    
@@ -32,7 +32,7 @@ eval_config:
     schema_block: |
       {
         "catalog": "demo",
-        "schema": "silver",
+        "schema": "stage_canonical",
         "tables": [
           {
             "name": "attribute",
