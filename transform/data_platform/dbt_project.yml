@@ -28,9 +28,10 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   silver:
-    raw:
-      +materialized: view   # ignored, since sources only
-    canonical:
-      +catalog: demo
-      +file_format: iceberg
-      +materialized: table
+    stage:
+      raw:
+        +materialized: view   # ignored, since sources only
+      canonical:
+        +catalog: demo
+        +file_format: iceberg
+        +materialized: table
