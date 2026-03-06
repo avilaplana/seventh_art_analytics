@@ -142,7 +142,7 @@ with DAG(
     projects_dir = os.environ["PROJECTS_DIR"]
     
     dbt_deps_command = """deps
-    --project-dir /usr/app/dbt/silver
+    --project-dir /usr/app/dbt/data_platform
     """
     
     dbt_deps_task = DockerOperator(
@@ -169,7 +169,7 @@ with DAG(
     projects_dir = os.environ["PROJECTS_DIR"]
 
     dbt_seed_command = """seed
-    --project-dir /usr/app/dbt/silver
+    --project-dir /usr/app/dbt/data_platform
     """
 
     dbt_seed_task = DockerOperator(
@@ -197,7 +197,7 @@ with DAG(
     dbt_canonical_run_command = """run 
     --profiles-dir /usr/app/dbt 
     --target stage-canonical 
-    --project-dir /usr/app/dbt/silver
+    --project-dir /usr/app/dbt/data_platform
     """
     
     dbt_canonical_run_task = DockerOperator(
@@ -224,7 +224,7 @@ with DAG(
     dbt_canonical_validation_command = """test
     --profiles-dir /usr/app/dbt 
     --target stage-canonical 
-    --project-dir /usr/app/dbt/silver
+    --project-dir /usr/app/dbt/data_platform
     """
     
     dbt_canonical_validation_task = DockerOperator(
