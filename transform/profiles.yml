@@ -1,7 +1,7 @@
 silver:
-  target: stage-canonical
+  target: stage_canonical
   outputs:
-    stage-canonical:
+    stage_canonical:
       type: spark
       method: thrift
       host: spark-thrift-server
