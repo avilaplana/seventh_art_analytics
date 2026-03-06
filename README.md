@@ -14,7 +14,7 @@ This is the current state of the data platform:
 ![Under construction data platform](doc/seventh-art-data-platform.png)
 
 ## Current Status
-- Priority 1: Provide AI Text-to-SQL approach in silver layer.
+- Priority 1: Provide AI Text-to-SQL approach in canonical layer.
 - Priority 2: Data modelling: Gold Layer (Star schema).
 - Priority 3: Implement Write-Audit-Publish Data pattern.
 - Priority 4: Introduce other sources to enrich the data model.
@@ -60,5 +60,5 @@ The list of libraries, frameworks and components are the followig:
 ![Bronze layer](doc/silver_er_silver_diagram.png)
 
 ### SQL Exercises
-- [50 SQL Questions for Silver Layer](doc/sql_exercises_50_difficult_questions.md) - Comprehensive SQL exercises covering the complete silver layer ER data model (all tables and relationships), designed for practice and RAG system implementation.
+- [50 SQL Questions for Silver Layer](doc/sql_exercises_50_difficult_questions.md) - Comprehensive SQL exercises covering the complete canonical layer ER data model (all tables and relationships), designed for practice and RAG system implementation.
   

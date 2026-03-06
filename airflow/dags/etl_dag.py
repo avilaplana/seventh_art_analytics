@@ -192,18 +192,18 @@ with DAG(
 
 
     ############################################
-    # Step 5: Transform Medallion Silver layer #
+    # Step 5: Transform Medallion Canonical layer #
     ############################################
-    dbt_silver_run_command = """run 
+    dbt_canonical_run_command = """run 
     --profiles-dir /usr/app/dbt 
     --target local 
     --project-dir /usr/app/dbt/silver
     """
     
-    dbt_silver_run_task = DockerOperator(
-        task_id="transform_DBT_stage_silver_layer",
+    dbt_canonical_run_task = DockerOperator(
+        task_id="transform_DBT_stage_canonical_layer",
         image="dbt-spark:f5bf2ec",
-        command=dbt_silver_run_command,
+        command=dbt_canonical_run_command,
         mounts=[
                 Mount(
                     source=f"{projects_dir}/seventh_art_analytics/transform",
@@ -219,18 +219,18 @@ with DAG(
     )
 
      ############################################
-    # Step 6: Data Validation Silver layer #
+    # Step 6: Data Validation Canonical layer #
     ############################################
-    dbt_silver_validation_command = """test
+    dbt_canonical_validation_command = """test
     --profiles-dir /usr/app/dbt 
     --target local 
     --project-dir /usr/app/dbt/silver
     """
     
-    dbt_silver_validation_task = DockerOperator(
-        task_id="transform_DBT_data_quality_check_stage_silver_layer",
+    dbt_canonical_validation_task = DockerOperator(
+        task_id="transform_DBT_data_quality_check_stage_canonical_layer",
         image="dbt-spark:f5bf2ec",
-        command=dbt_silver_validation_command,
+        command=dbt_canonical_validation_command,
         mounts=[
                 Mount(
                     source=f"{projects_dir}/seventh_art_analytics/transform",
@@ -280,12 +280,12 @@ with DAG(
     spark_raw_tasks[0] >> spark_raw_tasks[1:8] >> \
         dbt_deps_task >> \
         dbt_seed_task >> \
-        dbt_silver_run_task >> \
-        dbt_silver_validation_task
+        dbt_canonical_run_task >> \
+        dbt_canonical_validation_task
 
     # Success path → reset retry counter
-    dbt_silver_validation_task >> reset_retry_counter
+    dbt_canonical_validation_task >> reset_retry_counter
 
     # Failure path → wait → retry DAG
-    dbt_silver_validation_task >> wait_30_minutes
+    dbt_canonical_validation_task >> wait_30_minutes
     wait_30_minutes >> check_retry_limit >> restart_dag

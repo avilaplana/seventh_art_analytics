@@ -23,7 +23,7 @@ eval_config:
       - Output exactly ONE Spark SQL query
       - No explanations, comments, or markdown
       - Use ONLY tables and columns in the schema
-      - Always qualify tables with demo.stage_silver.<table>
+      - Always qualify tables with demo.stage_canonical.<table>
       - Always use explicit JOIN syntax
       - Do NOT use SELECT *
       - A movie is defined as title_type.title_type_name = 'movie'
@@ -41,8 +41,8 @@ eval_config:
       SELECT
         t.primary_title,
         CAST(t.average_rating AS DOUBLE) AS average_rating
-      FROM demo.stage_silver.title t
-      JOIN demo.stage_silver.title_type tt
+      FROM demo.stage_canonical.title t
+      JOIN demo.stage_canonical.title_type tt
         ON t.title_type_id = tt.title_type_id
       WHERE tt.title_type_name = 'movie'
         AND t.release_year = 2019
@@ -58,7 +58,7 @@ eval_config:
     schema_block: |
       {
         "catalog": "demo",
-        "schema": "stage_silver",
+        "schema": "stage_canonical",
         "tables": [
           {
             "name": "attribute",

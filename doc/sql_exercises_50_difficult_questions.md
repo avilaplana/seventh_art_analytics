@@ -1,6 +1,6 @@
 # 50 SQL Questions for Silver Layer Data Model
 
-This document contains 50 challenging SQL questions designed to test advanced SQL skills on the **complete silver layer Entity-Relationship (ER) data model**. These questions cover all tables and relationships in the silver layer schema, including:
+This document contains 50 challenging SQL questions designed to test advanced SQL skills on the **complete canonical layer Entity-Relationship (ER) data model**. These questions cover all tables and relationships in the canonical layer schema, including:
 
 - **Core entities**: `title`, `person`, `role`, `genre`, `title_type`, `region`, `language`, `attribute`
 - **Junction tables**: `genre_title`, `title_person_role`, `role_person`
@@ -41,10 +41,10 @@ SELECT
 	t.release_year,
 	t.average_rating,
 	concat_ws(', ', sort_array(collect_list(g.genre_name)))  AS genre_list
-FROM demo.silver.title t
-JOIN demo.silver.genre_title gt
+FROM demo.stage_canonical.title t
+JOIN demo.stage_canonical.genre_title gt
 ON t.title_id = gt.title_id
-JOIN demo.silver.genre g
+JOIN demo.stage_canonical.genre g
 ON gt.genre_id = g.genre_id
 WHERE t.release_year > 2010 and t.average_rating > 7.0
 GROUP BY t.title_id, t.primary_title, t.release_year, t.average_rating
@@ -70,10 +70,10 @@ WITH person_id_with_min_votes AS (
 		p.person_id,
 		p.name,
 		MIN(t.number_of_votes) AS min_number_of_votes
-	FROM demo.silver.person p
-	JOIN demo.silver.title_person_role tpr
+	FROM demo.stage_canonical.person p
+	JOIN demo.stage_canonical.title_person_role tpr
 	ON p.person_id = tpr.person_id
-	JOIN demo.silver.title t
+	JOIN demo.stage_canonical.title t
 	ON tpr.title_id = t.title_id
 	GROUP BY p.person_id, p.name
 ),
@@ -82,8 +82,8 @@ person_and_role AS (
     tpr.person_id,
     r.role_name,
     COUNT(*) AS counter_role
-  FROM demo.silver.title_person_role tpr
-  JOIN demo.silver.role r
+  FROM demo.stage_canonical.title_person_role tpr
+  JOIN demo.stage_canonical.role r
   ON tpr.role_id = r.role_id
   GROUP BY tpr.person_id, r.role_name
 ),
@@ -109,9 +109,9 @@ person_metrics AS (
     COUNT(*) AS total_titles,
     AVG(t.average_rating) AS avg_title_rating
   FROM person_id_with_min_votes pmv
-  JOIN demo.silver.title_person_role tpr
+  JOIN demo.stage_canonical.title_person_role tpr
   ON pmv.person_id = tpr.person_id
-  JOIN demo.silver.title t
+  JOIN demo.stage_canonical.title t
   ON tpr.title_id = t.title_id
   WHERE pmv.min_number_of_votes >= 1000
   GROUP BY pmv.person_id, pmv.name
@@ -150,8 +150,8 @@ WITH metrics_series_season AS (
 		te.series_title_id AS series_id,
 		te.season_number,
 		ROUND(AVG(t.average_rating),2) AS avg_rating_season
-	FROM demo.silver.title_episode te
-	JOIN demo.silver.title t
+	FROM demo.stage_canonical.title_episode te
+	JOIN demo.stage_canonical.title t
 	ON te.title_id = t.title_id
 	GROUP BY te.series_title_id, te.season_number
 ),
@@ -177,12 +177,12 @@ metrics_series AS (
 		COUNT(*) AS total_episodes,
 		AVG(t.duration_minutes) AS avg_episode_duration,
 		AVG(t.average_rating) AS avg_series_rating
-	FROM demo.silver.title t
-	JOIN demo.silver.title_type tp
+	FROM demo.stage_canonical.title t
+	JOIN demo.stage_canonical.title_type tp
 	ON t.title_type_id = tp.title_type_id
-	JOIN demo.silver.title_episode te
+	JOIN demo.stage_canonical.title_episode te
 	ON t.title_id = te.series_title_id
-	JOIN demo.silver.title t_episodes
+	JOIN demo.stage_canonical.title t_episodes
 	ON te.title_id = t_episodes.title_id
 	WHERE tp.title_type_name = 'tvSeries'
 	GROUP BY t.title_id, t.primary_title
@@ -219,10 +219,10 @@ WITH localization_base AS (
         tl.title_id,
         r.region_code,
         l.language_code
-    FROM demo.silver.title_localized tl
-    JOIN demo.silver.regions r
+    FROM demo.stage_canonical.title_localized tl
+    JOIN demo.stage_canonical.regions r
         ON tl.region_id = r.region_id
-    JOIN demo.silver.languages l
+    JOIN demo.stage_canonical.languages l
         ON tl.language_id = l.language_id
 ),
 
@@ -262,7 +262,7 @@ SELECT
     wmr.missing_regions,
     wmr.available_localizations
 FROM with_missing_regions wmr
-JOIN demo.silver.title t
+JOIN demo.stage_canonical.title t
     ON wmr.title_id = t.title_id
 WHERE wmr.total_localizations >= 5
   AND SIZE(wmr.missing_regions) >= 2
@@ -287,20 +287,20 @@ WITH actor_director_titles AS (
         t.title_id,
         g.genre_name,
         t.average_rating
-    FROM demo.silver.title_person_role a
-    JOIN demo.silver.role ar
+    FROM demo.stage_canonical.title_person_role a
+    JOIN demo.stage_canonical.role ar
         ON a.role_id = ar.role_id
        AND ar.role_name = 'actor'
-    JOIN demo.silver.title_person_role d
+    JOIN demo.stage_canonical.title_person_role d
         ON a.title_id = d.title_id
-    JOIN demo.silver.role dr
+    JOIN demo.stage_canonical.role dr
         ON d.role_id = dr.role_id
        AND dr.role_name = 'director'
-    JOIN demo.silver.genre_title gt
+    JOIN demo.stage_canonical.genre_title gt
         ON a.title_id = gt.title_id
-    JOIN demo.silver.genre g
+    JOIN demo.stage_canonical.genre g
         ON gt.genre_id = g.genre_id
-    JOIN demo.silver.title t
+    JOIN demo.stage_canonical.title t
         ON a.title_id = t.title_id
 ),
 
@@ -325,9 +325,9 @@ FROM actor_director_titles ad
 JOIN qualified_actor_genres q
     ON ad.actor_id = q.actor_id
    AND ad.genre_name = q.genre_name
-JOIN demo.silver.person pa
+JOIN demo.stage_canonical.person pa
     ON ad.actor_id = pa.person_id
-JOIN demo.silver.person pd
+JOIN demo.stage_canonical.person pd
     ON ad.director_id = pd.person_id
 GROUP BY
     ad.actor_id,
@@ -360,10 +360,10 @@ WITH genre_rank AS (
 		t.average_rating,
 		ROW_NUMBER() OVER (PARTITION BY g.genre_name ORDER BY t.average_rating DESC) AS genre_rank,
 		PERCENT_RANK() OVER (PARTITION BY g.genre_name ORDER BY t.average_rating DESC) AS percentile_rank
-	FROM demo.silver.title t
-	JOIN demo.silver.genre_title tg
+	FROM demo.stage_canonical.title t
+	JOIN demo.stage_canonical.genre_title tg
 	ON t.title_id = tg.title_id
-	JOIN demo.silver.genre g
+	JOIN demo.stage_canonical.genre g
 	ON tg.genre_id = g.genre_id
 	WHERE t.number_of_votes >= 100
 	ORDER BY g.genre_name
@@ -393,8 +393,8 @@ WITH title_type_year_grouped AS (
         tt.title_type_name,
         COUNT(*) AS titles_released,
         AVG(t.average_rating) AS avg_rating
-    FROM demo.silver.title t
-    JOIN demo.silver.title_type tt
+    FROM demo.stage_canonical.title t
+    JOIN demo.stage_canonical.title_type tt
       ON t.title_type_id = tt.title_type_id
     WHERE t.release_year IS NOT NULL
     GROUP BY tt.title_type_name, t.release_year
@@ -457,10 +457,10 @@ WITH person_general_metric AS (
             WHEN MAX(t.release_year) >= YEAR(CURDATE()) - 2 THEN 1
             ELSE 0
         END AS is_active
-    FROM demo.silver.person p
-    JOIN demo.silver.title_person_role tpr 
+    FROM demo.stage_canonical.person p
+    JOIN demo.stage_canonical.title_person_role tpr 
         ON p.person_id = tpr.person_id
-    JOIN demo.silver.title t 
+    JOIN demo.stage_canonical.title t 
         ON tpr.title_id = t.title_id
     WHERE (p.death_year IS NULL OR t.release_year <= p.death_year)
     AND t.release_year IS NOT NULL
@@ -472,10 +472,10 @@ person_title_year_metric AS (
         p.person_id, 
         t.release_year,
         COUNT(DISTINCT t.title_id) AS titles_per_year
-    FROM demo.silver.person p
-    JOIN demo.silver.title_person_role tpr 
+    FROM demo.stage_canonical.person p
+    JOIN demo.stage_canonical.title_person_role tpr 
         ON p.person_id = tpr.person_id
-    JOIN demo.silver.title t 
+    JOIN demo.stage_canonical.title t 
         ON tpr.title_id = t.title_id
     WHERE t.release_year IS NOT NULL
     GROUP BY p.person_id, t.release_year
@@ -1146,5 +1146,5 @@ When implementing these questions in a RAG system:
 ---
 
 *Generated for Seventh Art Analytics - Complete Silver Layer ER Data Model*
-*Covers all tables and relationships in the silver layer schema*
+*Covers all tables and relationships in the stage_canonical layer schema*
 *Last Updated: 2025*

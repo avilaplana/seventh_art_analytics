@@ -1,6 +1,6 @@
 ## NL to SQL - Evaluation strategy
 
-I am building a data plaftorm in my local environment (OLLAMA) following the medallion architecture. I am implementing a Natural Language to SQL solution against the silver layer. Currently i have been some testing providing a database schema based on DBT models and a semantic layer. I am using the model `qwen2.5-coder:7b` with context size `16384`. My idea is to create a benchmark for local LLMs (~3 LLMS ) based on the following variables:
+I am building a data plaftorm in my local environment (OLLAMA) following the medallion architecture. I am implementing a Natural Language to SQL solution against the canonical layer. Currently i have been some testing providing a database schema based on DBT models and a semantic layer. I am using the model `qwen2.5-coder:7b` with context size `16384`. My idea is to create a benchmark for local LLMs (~3 LLMS ) based on the following variables:
 
 - **LLM**
 - **Prompt**
