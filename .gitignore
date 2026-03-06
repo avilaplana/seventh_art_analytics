@@ -6,10 +6,13 @@ raw_data/*
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,dbt
 
 ### dbt ###
-target/
-dbt_modules/
-dbt_packages/
-logs/
+# Or more generally, catch anywhere:
+**/target/
+**/dbt_modules/
+**/dbt_packages/
+**/logs/
+**/.user.yml
+**/__pycache__/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
