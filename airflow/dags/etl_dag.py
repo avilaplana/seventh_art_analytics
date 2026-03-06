@@ -196,7 +196,7 @@ with DAG(
     ############################################
     dbt_canonical_run_command = """run 
     --profiles-dir /usr/app/dbt 
-    --target stage-canonical 
+    --target stage_canonical 
     --project-dir /usr/app/dbt/data_platform
     """
     
@@ -223,7 +223,7 @@ with DAG(
     ############################################
     dbt_canonical_validation_command = """test
     --profiles-dir /usr/app/dbt 
-    --target stage-canonical 
+    --target stage_canonical 
     --project-dir /usr/app/dbt/data_platform
     """
     
