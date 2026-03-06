@@ -27,10 +27,10 @@ clean-targets:         # directories to be removed by `dbt clean`
 # directory as views. These settings can be overridden in the individual model
 # files using the `{{ config(...) }}` macro.
 models:
-  raw:
-    +materialized: view   # ignored, since sources only
   silver:
-    +catalog: demo
-    +file_format: iceberg
-    +materialized: table
-  
+    raw:
+      +materialized: view   # ignored, since sources only
+    canonical:
+      +catalog: demo
+      +file_format: iceberg
+      +materialized: table
