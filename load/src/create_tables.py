@@ -9,17 +9,17 @@ spark = SparkSession.builder \
 spark.sql("""CREATE NAMESPACE IF NOT EXISTS default""")
 
 # Drop tables
-spark.sql("""DROP TABLE IF EXISTS demo.stage_bronze.name_basics""")
-spark.sql("""DROP TABLE IF EXISTS demo.stage_bronze.title_akas""")
-spark.sql("""DROP TABLE IF EXISTS demo.stage_bronze.title_basics""")
-spark.sql("""DROP TABLE IF EXISTS demo.stage_bronze.title_crew""")
-spark.sql("""DROP TABLE IF EXISTS demo.stage_bronze.title_episode""")
-spark.sql("""DROP TABLE IF EXISTS demo.stage_bronze.title_principals""")
-spark.sql("""DROP TABLE IF EXISTS demo.stage_bronze.title_ratings""")
+spark.sql("""DROP TABLE IF EXISTS demo.stage_raw.name_basics""")
+spark.sql("""DROP TABLE IF EXISTS demo.stage_raw.title_akas""")
+spark.sql("""DROP TABLE IF EXISTS demo.stage_raw.title_basics""")
+spark.sql("""DROP TABLE IF EXISTS demo.stage_raw.title_crew""")
+spark.sql("""DROP TABLE IF EXISTS demo.stage_raw.title_episode""")
+spark.sql("""DROP TABLE IF EXISTS demo.stage_raw.title_principals""")
+spark.sql("""DROP TABLE IF EXISTS demo.stage_raw.title_ratings""")
 
 # Create Iceberg Tables
 spark.sql("""
-CREATE TABLE IF NOT EXISTS demo.stage_bronze.name_basics (
+CREATE TABLE IF NOT EXISTS demo.stage_raw.name_basics (
     nconst STRING,
     primaryName STRING,
     birthYear STRING,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.name_basics (
 """)
 
 spark.sql("""
-CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_akas (
+CREATE TABLE IF NOT EXISTS demo.stage_raw.title_akas (
     titleId STRING,
     ordering STRING,
     title STRING,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_akas (
 """)
 
 spark.sql("""
-CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_basics (
+CREATE TABLE IF NOT EXISTS demo.stage_raw.title_basics (
     tconst STRING,
     titleType STRING,
     primaryTitle STRING,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_basics (
 """)
 
 spark.sql("""
-CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_crew (
+CREATE TABLE IF NOT EXISTS demo.stage_raw.title_crew (
     tconst STRING,
     directors STRING,
     writers STRING,
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_crew (
 """)
 
 spark.sql("""
-CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_episode (
+CREATE TABLE IF NOT EXISTS demo.stage_raw.title_episode (
     tconst STRING,
     parentTconst STRING,
     seasonNumber STRING,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_episode (
 """)
 
 spark.sql("""
-CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_principals (
+CREATE TABLE IF NOT EXISTS demo.stage_raw.title_principals (
     tconst STRING,
     ordering STRING,
     nconst STRING,
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_principals (
 """)
 
 spark.sql("""
-CREATE TABLE IF NOT EXISTS demo.stage_bronze.title_ratings (
+CREATE TABLE IF NOT EXISTS demo.stage_raw.title_ratings (
     tconst STRING,
     averageRating STRING,
     numVotes STRING,

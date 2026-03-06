@@ -20,7 +20,7 @@ def main(snapshot_date: str, ingested_at_timestamp: str, snapshot_try: int):
         .withColumn("snapshot_date", lit(snapshot_date)) \
         .withColumn("ingested_at_timestamp", lit(ingested_at_timestamp)) \
         .withColumn("snapshot_try", lit(int(snapshot_try) + 1)) \
-        .writeTo("demo.stage_bronze.name_basics").createOrReplace()
+        .writeTo("demo.stage_raw.name_basics").createOrReplace()
 
     spark.stop()
 

@@ -21,8 +21,8 @@ SELECT
     CAST(tb.snapshot_date AS DATE) AS snapshot_date,
     CAST(tb.ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
     tb.snapshot_try
-FROM {{ source('stage_bronze', 'title_basics') }} tb
+FROM {{ source('stage_raw', 'title_basics') }} tb
 LEFT JOIN {{ ref('title_type') }} tt
 ON tb.titleType = tt.title_type_name
-LEFT JOIN {{ source('stage_bronze', 'title_ratings') }} tr
+LEFT JOIN {{ source('stage_raw', 'title_ratings') }} tr
 ON tb.tconst = tr.tconst

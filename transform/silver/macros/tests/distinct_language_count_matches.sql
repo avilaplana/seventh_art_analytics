@@ -2,7 +2,7 @@
 
 WITH source_counts AS (
     SELECT COUNT(DISTINCT language) AS cnt
-    FROM {{ source('stage_bronze', 'title_akas') }}
+    FROM {{ source('stage_raw', 'title_akas') }}
     WHERE language IS NOT NULL
       AND language != '\\N'
 ),

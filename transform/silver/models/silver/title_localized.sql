@@ -22,7 +22,7 @@ WITH title_akas_cleaned AS (
     CAST(snapshot_date AS DATE) AS snapshot_date,
     CAST(ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
     snapshot_try
-  FROM {{ source('stage_bronze', 'title_akas') }}
+  FROM {{ source('stage_raw', 'title_akas') }}
 )
 
 SELECT 

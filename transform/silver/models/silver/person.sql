@@ -12,4 +12,4 @@ SELECT
   CAST(snapshot_date AS DATE) AS snapshot_date,
   CAST(ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
   snapshot_try
-FROM {{ source('stage_bronze', 'name_basics') }}
+FROM {{ source('stage_raw', 'name_basics') }}
