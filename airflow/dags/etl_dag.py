@@ -113,7 +113,7 @@ with DAG(
     # Step 2: Load each raw file from S3/MinIO to Iceberg using Spark jobs #
     ########################################################################
     SPARK_JOBS_DIR = "/opt/airflow/load/src/"
-    load_bronze_jobs = [
+    load_raw_jobs = [
         "create_tables",
         "load_to_iceberg_name_basics",
         "load_to_iceberg_title_akas",
@@ -123,18 +123,18 @@ with DAG(
         "load_to_iceberg_title_principals",
         "load_to_iceberg_title_ratings"
         ]
-    spark_bronze_tasks = []
+    spark_raw_tasks = []
 
     snapshot_try = int(Variable.get(RETRY_COUNTER_VAR, default_var=0))
 
-    for job in load_bronze_jobs:
-        spark_task_id = f"load_SPARK_stage_bronze_{job}"
+    for job in load_raw_jobs:
+        spark_task_id = f"load_SPARK_stage_raw_{job}"
         spark_task = BashOperator(
             retries=0,          # fail fast on Spark job
             task_id=spark_task_id,
             bash_command=build_spark_submit(f"{SPARK_JOBS_DIR}{job}.py", snapshot_date, ingested_at_timestamp, snapshot_try)
         )
-        spark_bronze_tasks.append(spark_task)
+        spark_raw_tasks.append(spark_task)
 
     ############################################
     # Step 3: Install DBT dependencies #
@@ -273,11 +273,11 @@ with DAG(
     trigger_rule=TriggerRule.ALL_SUCCESS,
 )
    
-    extract_tasks >> spark_bronze_tasks[0]
+    extract_tasks >> spark_raw_tasks[0]
 
-    spark_bronze_tasks[0].trigger_rule = TriggerRule.NONE_FAILED
+    spark_raw_tasks[0].trigger_rule = TriggerRule.NONE_FAILED
 
-    spark_bronze_tasks[0] >> spark_bronze_tasks[1:8] >> \
+    spark_raw_tasks[0] >> spark_raw_tasks[1:8] >> \
         dbt_deps_task >> \
         dbt_seed_task >> \
         dbt_silver_run_task >> \

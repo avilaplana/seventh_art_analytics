@@ -15,8 +15,8 @@ WITH title_principals_cleaned AS (
     CAST(tp.snapshot_date AS DATE) AS snapshot_date,
     CAST(tp.ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
     tp.snapshot_try   
-FROM {{ source ('stage_bronze', 'title_principals') }} tp
-INNER JOIN {{ source ('stage_bronze', 'name_basics') }} nb -- FILTER OUT persons that are not defined in name_basics
+FROM {{ source ('stage_raw', 'title_principals') }} tp
+INNER JOIN {{ source ('stage_raw', 'name_basics') }} nb -- FILTER OUT persons that are not defined in name_basics
 ON tp.nconst = nb.nconst
 ),
 

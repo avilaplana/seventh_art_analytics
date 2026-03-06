@@ -4,7 +4,7 @@ WITH roles_array AS (
     CAST(snapshot_date AS DATE) AS snapshot_date,
     CAST(ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
     snapshot_try
-  FROM {{ source('stage_bronze', 'name_basics') }}
+  FROM {{ source('stage_raw', 'name_basics') }}
 ),
 
 roles_distinct AS (
@@ -30,7 +30,7 @@ category_distinct AS (
     CAST(ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
     snapshot_try,
     category AS role
-  FROM {{ source('stage_bronze', 'title_principals') }}
+  FROM {{ source('stage_raw', 'title_principals') }}
   ORDER BY role ASC
 ),
 

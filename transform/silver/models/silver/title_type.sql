@@ -5,7 +5,7 @@
         CAST(snapshot_date AS DATE) AS snapshot_date,
         CAST(ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,
         snapshot_try
-    FROM {{ source('stage_bronze', 'title_basics') }}
+    FROM {{ source('stage_raw', 'title_basics') }}
     ORDER BY title_type_name ASC
 )
 

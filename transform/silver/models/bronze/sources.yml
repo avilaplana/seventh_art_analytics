@@ -1,8 +1,8 @@
 version: 2
 
 sources:
-  - name: stage_bronze
-    schema: stage_bronze
+  - name: stage_raw
+    schema: stage_raw
     tables:
       - name: name_basics
       - name: title_principals

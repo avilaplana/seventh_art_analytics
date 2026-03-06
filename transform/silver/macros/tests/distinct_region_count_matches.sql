@@ -2,7 +2,7 @@
 
 WITH source_counts AS (
     SELECT COUNT(DISTINCT region) AS cnt
-    FROM {{ source('stage_bronze', 'title_akas') }}
+    FROM {{ source('stage_raw', 'title_akas') }}
     WHERE region IS NOT NULL
       AND region != '\\N'
 ),

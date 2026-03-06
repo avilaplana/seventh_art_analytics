@@ -8,7 +8,7 @@ SELECT
     CAST(snapshot_date AS DATE),
     CAST(ingested_at_timestamp AS TIMESTAMP),
     snapshot_try
-FROM {{ source('stage_bronze', 'title_akas') }}
+FROM {{ source('stage_raw', 'title_akas') }}
 )
 SELECT
   uuid() AS attribute_id,
