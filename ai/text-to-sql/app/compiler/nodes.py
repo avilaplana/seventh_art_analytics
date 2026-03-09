@@ -1,12 +1,8 @@
-from webbrowser import get
-
 from .state import RunnerState
 from . import capabilities
 
 def generate_llm_response_node(state: RunnerState) -> dict:
     llm_response = capabilities.generate_sql_query_by_LLM(state["user_query"], state["prompt_config"])
-    print("LLM response:", llm_response)
-    # sql_generated = response["message"]["content"].strip()
     return {"llm_response": llm_response}
 
 def load_prompt_configuration_node(state: RunnerState) -> dict:
@@ -32,7 +28,8 @@ def repair_sql_query_node(state: RunnerState) -> dict:
 
 def sanitize_sql_query_node(state: RunnerState) -> dict:
     """
-    Strip ```sql blocks, leading/trailing whitespace, etc.
+    Strip ```sql``` blocks, leading/trailing whitespace, etc.
+    Add 'LIMIT 10' if no LIMIT is present in the query.
     """
     sql = state["llm_response"]["message"]["content"].strip()
     
@@ -41,5 +38,13 @@ def sanitize_sql_query_node(state: RunnerState) -> dict:
         sql = "\n".join(sql.splitlines()[1:-1])
     
     sql = sql.strip()
+    
+    # Check if LIMIT exists anywhere (case-insensitive)
+    if "LIMIT" not in sql.upper():
+        # Preserve existing semicolon if present
+        ends_with_semicolon = sql.strip().endswith(";")
+        sql = sql.rstrip("; \t\n") + " LIMIT 10"
+        if ends_with_semicolon:
+            sql += ";"
     
     return {"sql_sanitised": sql}

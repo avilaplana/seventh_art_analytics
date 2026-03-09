@@ -23,6 +23,7 @@ class QueryRequest(BaseModel):
 
 @router.post("/query", response_model=QueryResponse)
 def query(request: QueryRequest):
+    print(f"Received query: {request.question} for model: {request.model} version: {request.version}")
     result = runner.run(request.question, model=request.model, version=request.version)
     return QueryResponse(
         sql=result.get("sql"),

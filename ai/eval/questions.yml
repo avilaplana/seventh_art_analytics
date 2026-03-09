@@ -25,7 +25,7 @@ questions:
 - id: simple_01
   difficulty: simple
   natural_language: "List the 10 highest-rated movies released in 2020."
-  sql: |
+  sql_expected: |
     SELECT
       t.primary_title,
       CAST(t.average_rating AS DOUBLE) AS average_rating
@@ -41,7 +41,7 @@ questions:
 - id: simple_02
   difficulty: simple
   natural_language: "Show all movies released in 1999 with a rating of at least 8 out of 10."
-  sql: |
+  sql_expected: |
     SELECT
       t.primary_title,
       CAST(t.average_rating AS DOUBLE) AS average_rating
@@ -55,7 +55,7 @@ questions:
 - id: simple_03
   difficulty: simple
   natural_language: "Find the details of the movie titled ‘Inception’."
-  sql: |
+  sql_expected: |
     SELECT t.*
     FROM demo.stage_canonical.title t
     JOIN demo.stage_canonical.title_type tt
@@ -66,7 +66,7 @@ questions:
 - id: simple_04
   difficulty: simple
   natural_language: "List all movies released after 2015 that are marked as adult content."
-  sql: |
+  sql_expected: |
     SELECT t.primary_title, t.release_year
     FROM demo.stage_canonical.title t
     JOIN demo.stage_canonical.title_type tt
@@ -78,7 +78,7 @@ questions:
 - id: simple_05
   difficulty: simple
   natural_language: "Show all movies that have a runtime longer than 150 minutes."
-  sql: |
+  sql_expected: |
     SELECT t.primary_title, t.duration_minutes
     FROM demo.stage_canonical.title t
     JOIN demo.stage_canonical.title_type tt
@@ -89,7 +89,7 @@ questions:
 - id: simple_06
   difficulty: simple
   natural_language: "Find all titles released in Spain in the Spanish language."
-  sql: |
+  sql_expected: |
     SELECT DISTINCT t.primary_title
     FROM demo.stage_canonical.title t
     JOIN demo.stage_canonical.title_localized tl
@@ -104,7 +104,7 @@ questions:
 - id: simple_07
   difficulty: simple
   natural_language: "List all movies that have no user rating yet."
-  sql: |
+  sql_expected: |
     SELECT t.primary_title
     FROM demo.stage_canonical.title t
     JOIN demo.stage_canonical.title_type tt
@@ -115,7 +115,7 @@ questions:
 - id: simple_08
   difficulty: simple
   natural_language: "Show all titles released in 2023 along with their primary title and release year."
-  sql: |
+  sql_expected: |
     SELECT t.primary_title, t.release_year
     FROM demo.stage_canonical.title t
     WHERE t.release_year = 2023;
@@ -123,7 +123,7 @@ questions:
 - id: simple_09
   difficulty: simple
   natural_language: "List the first 20 titles in the catalog ordered by release year ascending."
-  sql: |
+  sql_expected: |
     SELECT t.primary_title, t.release_year
     FROM demo.stage_canonical.title t
     ORDER BY t.release_year ASC
@@ -132,7 +132,7 @@ questions:
 - id: simple_10
   difficulty: simple
   natural_language: "Show all movies whose primary title contains the word ‘Star’."
-  sql: |
+  sql_expected: |
     SELECT t.primary_title
     FROM demo.stage_canonical.title t
     JOIN demo.stage_canonical.title_type tt
@@ -147,7 +147,7 @@ questions:
 - id: medium_01
   difficulty: medium
   natural_language: "For each genre, what is the average rating of movies released after 2010?"
-  sql: |
+  sql_expected: |
     SELECT
       g.genre_name,
       ROUND(AVG(CAST(t.average_rating AS DOUBLE)),2) AS avg_rating
@@ -166,7 +166,7 @@ questions:
 - id: medium_02
   difficulty: medium
   natural_language: "List the top 10 highest-rated action movies of all time."
-  sql: |
+  sql_expected: |
     SELECT
       t.primary_title,
       ROUND(CAST(t.average_rating AS DOUBLE),2) AS average_rating
@@ -186,7 +186,7 @@ questions:
 - id: medium_03
   difficulty: medium
   natural_language: "For each year since 2000, how many movies were released?"
-  sql: |
+  sql_expected: |
     SELECT
       t.release_year,
       COUNT(*) AS movie_count
@@ -201,7 +201,7 @@ questions:
 - id: medium_04
   difficulty: medium
   natural_language: "Show the 20 most recent movies along with their average rating and number of votes."
-  sql: |
+  sql_expected: |
     SELECT
       t.primary_title,
       t.release_year,
@@ -218,7 +218,7 @@ questions:
 - id: medium_05
   difficulty: medium
   natural_language: "List all movies that belong to both the ‘Action’ and ‘Adventure’ genres."
-  sql: |
+  sql_expected: |
     SELECT t.primary_title
     FROM demo.stage_canonical.title t
     JOIN demo.stage_canonical.title_type tt
@@ -236,7 +236,7 @@ questions:
 - id: medium_06
   difficulty: medium
   natural_language: "Find the top 10 movies by rating that were released in the United States."
-  gold_sql: |
+  sql_expected: |
     SELECT 
     	t.primary_title, 
     	ROUND(CAST(t.average_rating AS DOUBLE), 2) AS average_rating
@@ -251,7 +251,7 @@ questions:
 - id: medium_07
   difficulty: medium
   natural_language: "For each genre, show the number of movies with a rating below 5."
-  gold_sql: |
+  sql_expected: |
     SELECT g.genre_name, COUNT(*) AS low_rated_movies
     FROM demo.stage_canonical.title t
     JOIN demo.stage_canonical.genre_title gt ON t.title_id = gt.title_id
@@ -262,7 +262,7 @@ questions:
 - id: medium_08
   difficulty: medium
   natural_language: "List all movies with an average rating above 8 that have received at least 10,000 votes."
-  gold_sql: |
+  sql_expected: |
     SELECT t.primary_title
     FROM demo.stage_canonical.title t
     WHERE CAST(t.average_rating AS DOUBLE) > 8
@@ -271,7 +271,7 @@ questions:
 - id: medium_09
   difficulty: medium
   natural_language: "Show the top 10 ‘Comedy’ movies released between 2010 and 2020 by rating."
-  gold_sql: |
+  sql_expected: |
     SELECT t.primary_title, ROUND(CAST(t.average_rating AS DOUBLE),2) AS average_rating
     FROM demo.stage_canonical.title t
     JOIN demo.stage_canonical.genre_title gt ON t.title_id = gt.title_id
@@ -285,7 +285,7 @@ questions:
 - id: medium_10
   difficulty: medium
   natural_language: "For each year, show the number of new titles and the average rating of those titles."
-  gold_sql: |
+  sql_expected: |
     SELECT t.release_year,
            COUNT(*) AS title_count,
            ROUND(AVG(CAST(t.average_rating AS DOUBLE)),2) AS avg_rating
@@ -301,7 +301,7 @@ questions:
 - id: hard_01
   difficulty: hard
   natural_language: "Find the top 5 actors with the highest average movie rating in the last 5 years, considering only movies where they had a leading role and at least 5 such movies."
-  gold_sql: |
+  sql_expected: |
     SELECT 
       p.name, 
       ROUND(AVG(CAST(t.average_rating AS DOUBLE)),2) AS avg_rating
@@ -322,7 +322,7 @@ questions:
 - id: hard_02
   difficulty: hard
   natural_language: "For each genre, list the top 3 movies by rating released in the last 10 years."
-  gold_sql: |
+  sql_expected: |
     SELECT genre_name, primary_title, release_year, average_rating
     FROM (
       SELECT g.genre_name,
@@ -344,7 +344,7 @@ questions:
 - id: hard_03
   difficulty: hard
   natural_language: "Find the directors whose movies have the highest average rating, considering only directors with at least 10 movies."
-  gold_sql: |
+  sql_expected: |
     SELECT 
     	p.name, 
     	ROUND(AVG(CAST(t.average_rating AS DOUBLE)),2) AS avg_rating
@@ -363,7 +363,7 @@ questions:
 - id: hard_04
   difficulty: hard
   natural_language: "For each year in the last 20 years, find the genre with the highest average rating."
-  gold_sql: |
+  sql_expected: |
     SELECT release_year, genre_name, avg_rating
     FROM (
       SELECT t.release_year,
@@ -385,7 +385,7 @@ questions:
 - id: hard_05
   difficulty: hard
   natural_language: "Find the top 10 actors by total number of votes across all movies they have acted in."
-  gold_sql: |
+  sql_expected: |
     SELECT 
     	p.name, 
     	SUM(CAST(t.number_of_votes AS BIGINT)) AS total_votes
@@ -404,7 +404,7 @@ questions:
 - id: hard_06
   difficulty: hard
   natural_language: "For each genre, compute the share of movies that are adult content and show only genres where this share is above 20%."
-  gold_sql: |
+  sql_expected: |
     SELECT g.genre_name,
            SUM(CASE WHEN t.is_adult = true THEN 1 ELSE 0 END) / COUNT(*) AS adult_share
     FROM demo.stage_canonical.title t
@@ -418,7 +418,7 @@ questions:
 - id: hard_07
   difficulty: hard
   natural_language: "Find all movies that feature both ‘Leonardo DiCaprio’ and ‘Kate Winslet’ and list their titles and release years."
-  gold_sql: |
+  sql_expected: |
     SELECT t.primary_title, t.release_year
     FROM demo.stage_canonical.title t
     JOIN demo.stage_canonical.title_type tt ON t.title_type_id = tt.title_type_id    
@@ -431,7 +431,7 @@ questions:
 - id: hard_08
   difficulty: hard
   natural_language: "For each actor, compute the number of movies they appeared in before 2000 and after 2000, and show only actors who have at least 5 movies in each period."
-  gold_sql: |
+  sql_expected: |
     SELECT p.name,
            SUM(CASE WHEN t.release_year < 2000 THEN 1 ELSE 0 END) AS before_2000,
            SUM(CASE WHEN t.release_year >= 2000 THEN 1 ELSE 0 END) AS after_2000
@@ -447,7 +447,7 @@ questions:
 - id: hard_09
   difficulty: hard
   natural_language: "Find the top 10 movies that improved the most in rating compared to the average rating of movies released in the same year and genre."
-  gold_sql: |
+  sql_expected: |
     WITH yearly_genre_avg AS (
       SELECT t.release_year,
              g.genre_id,
@@ -473,7 +473,7 @@ questions:
 - id: hard_10
   difficulty: hard
   natural_language: "For each of the last 5 years, list the top 3 directors by average rating of their movies in that year, considering only directors with at least 3 movies for that year."
-  gold_sql: |
+  sql_expected: |
     SELECT release_year, name, avg_rating
     FROM (
       SELECT t.release_year,

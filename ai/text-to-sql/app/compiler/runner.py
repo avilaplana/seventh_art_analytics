@@ -22,15 +22,15 @@ class SQLAgent:
 
         final_state = self.graph.invoke(state)
 
+        metrics = self._extract_llm_metrics(final_state.get("llm_response") or {})
+
         if final_state.get("error"):
             return {
             "sql": final_state["sql_sanitised"],
             "error": final_state["error"],
             "metrics": metrics,
         }
-
-        metrics = self._extract_llm_metrics(final_state.get("llm_response") or {})
-
+        
         return {
             "sql": final_state["sql_sanitised"],
             "result": final_state["db_result"],

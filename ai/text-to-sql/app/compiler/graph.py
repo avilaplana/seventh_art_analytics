@@ -8,7 +8,7 @@ from .nodes import (
     repair_sql_query_node,
 )
 
-MAX_RETRIES = 1 # To manage retries logic later on
+MAX_RETRIES = 0 # To manage retries logic later on
 
 def build_graph():
     graph = StateGraph(RunnerState)
