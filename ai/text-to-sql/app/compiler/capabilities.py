@@ -3,7 +3,7 @@ import json
 import glob
 from ollama import Client
 import jaydebeapi
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Mapping
 import yaml
 from jinja2 import Template
 
@@ -31,37 +31,38 @@ LLM_CLIENT = Client(host="http://host.docker.internal:11434")
 # -----------------------------
 # Functions
 # -----------------------------
-def generate_sql_query_by_LLM(user_query: str, model: str, version: int) -> str:
 
-    # Load YAML
+def load_prompt_configuration(model: str, version: int) -> Any:
     with open(f"/usr/app/ai/eval/version_control/{model}/eval_config_v{version}.yml", "r") as f:
-        config = yaml.safe_load(f)
+        return yaml.safe_load(f)    
+
+def generate_sql_query_by_LLM(user_query: str, prompt_config: Any) -> Mapping[str, Any]:
 
     # Render system prompt
-    system_prompt = config["eval_config"]["prompt_templates"]["system"]
+    system_prompt = prompt_config["eval_config"]["prompt_templates"]["system"]
     
     # Render user prompt (per question)
-    user_template = Template(config["eval_config"]["prompt_templates"]["user_template"])
+    user_template = Template(prompt_config["eval_config"]["prompt_templates"]["user_template"])
     user_prompt = user_template.render(
-        schema_block=config["eval_config"]["prompt_templates"]["schema_block"],
-        semantic_block=config["eval_config"]["prompt_templates"]["semantic_block"],
+        schema_block=prompt_config["eval_config"]["prompt_templates"]["schema_block"],
+        semantic_block=prompt_config["eval_config"]["prompt_templates"]["semantic_block"],
         question=user_query
     )
 
     response = LLM_CLIENT.chat(
-        model=config["eval_config"]["model"],
+        model=prompt_config["eval_config"]["model"],
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
         options={
-            "num_ctx": config["eval_config"]["window_size"],
-            "temperature": config["eval_config"]["sampling"]["temperature"],
-            "top_p": config["eval_config"]["sampling"]["top_p"]
-            # "num_predict": config["eval_config"]["sampling"]["max_tokens"]
+            "num_ctx": prompt_config["eval_config"]["window_size"],
+            "temperature": prompt_config["eval_config"]["sampling"]["temperature"],
+            "top_p": prompt_config["eval_config"]["sampling"]["top_p"]
+            # "num_predict": prompt_config["eval_config"]["sampling"]["max_tokens"]
         }
     )
-    return response["message"]["content"].strip()
+    return response
 
 
 def execute_sql_query(sql: str) -> Dict[str, Any]:
