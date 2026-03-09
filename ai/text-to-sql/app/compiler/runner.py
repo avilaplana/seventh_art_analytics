@@ -23,7 +23,11 @@ class SQLAgent:
         final_state = self.graph.invoke(state)
 
         if final_state.get("error"):
-            raise RuntimeError(final_state["error"])
+            return {
+            "sql": final_state["sql_sanitised"],
+            "error": final_state["error"],
+            "metrics": metrics,
+        }
 
         metrics = self._extract_llm_metrics(final_state.get("llm_response") or {})
 

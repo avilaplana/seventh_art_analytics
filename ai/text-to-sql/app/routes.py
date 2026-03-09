@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import List, Any
+from typing import List, Any, Optional
 from .compiler.runner import SQLAgent
 
 router = APIRouter()
@@ -12,7 +12,8 @@ class Response(BaseModel):
 
 class QueryResponse(BaseModel):
     sql: str
-    result: Response
+    result: Optional[Response]
+    error: Optional[str]
     metrics: dict
 
 class QueryRequest(BaseModel):
@@ -23,4 +24,9 @@ class QueryRequest(BaseModel):
 @router.post("/query", response_model=QueryResponse)
 def query(request: QueryRequest):
     result = runner.run(request.question, model=request.model, version=request.version)
-    return QueryResponse(sql=result["sql"], result=result["result"], metrics=result["metrics"])
+    return QueryResponse(
+        sql=result.get("sql"),
+        result=result.get("result"),
+        error=result.get("error"),
+        metrics=result.get("metrics")
+        )
