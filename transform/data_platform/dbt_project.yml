@@ -1,11 +1,11 @@
 # Name your project! Project names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
-name: 'silver'
+name: 'movie_data_platform'
 version: '1.0.0'
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'silver'
+profile: 'movie_data_platform'
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
 # found in the "models/" directory. You probably won't need to change these!
@@ -27,7 +27,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 # directory as views. These settings can be overridden in the individual model
 # files using the `{{ config(...) }}` macro.
 models:
-  silver:
+  movie_data_platform:
     stage:
       raw:
         +materialized: view   # ignored, since sources only

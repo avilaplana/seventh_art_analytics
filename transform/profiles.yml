@@ -1,4 +1,4 @@
-silver:
+movie_data_platform:
   target: stage_canonical
   outputs:
     stage_canonical:
