@@ -9,7 +9,7 @@ url = "http://localhost:8000/query"
 
 # Model & version
 model = "qwen2.5-coder"
-version = 3
+version = 5
 
 # Paths
 questions_to_eval = Path("/usr/app/ai/eval/questions.yml")
@@ -47,8 +47,10 @@ for q in questions:
         record = {
             "id": question_id,
             "question": question_text,
-            "response": result,
-            "sql_expected": question_sql_expected,
+            "sql_generated": result.get("sql"),
+            "error": result.get("error"),
+            "metrics": result.get("metrics"),
+            "sql_expected": question_sql_expected            
         }
 
     except requests.RequestException as e:

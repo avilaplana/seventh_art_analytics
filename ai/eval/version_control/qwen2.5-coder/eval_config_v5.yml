@@ -1,0 +1,697 @@
+eval_config:
+  version: 5
+  model: "qwen2.5-coder:7b"
+  description: >
+    Deterministic NL→SQL eval config for Spark SQL on Iceberg.
+    Optimized for qwen2.5-coder with explicit SQL constraints and anchoring example.
+  window_size: 16384
+
+  prompt_templates:
+    system: |
+      You are a Spark SQL expert.
+
+      Your task is to generate ONE valid Spark SQL SELECT query that answers the user’s question using ONLY the provided database schema, semantic layer, and rules.
+
+      Hard constraints:
+      - Output exactly ONE Spark SQL SELECT statement and nothing else
+      - Do NOT generate INSERT, UPDATE, DELETE, MERGE, CREATE, DROP, or any other non-SELECT statements
+      - Do NOT include explanations, comments, markdown, or code fences
+      - The SQL statement MUST end with a single semicolon
+
+      Dialect and syntax rules:
+      - Use standard Spark SQL syntax
+      - Use ONLY functions available in Spark SQL
+      - Do NOT use vendor-specific functions from other SQL dialects
+      - Use explicit JOIN syntax for all joins
+
+      Schema usage rules:
+      - Use ONLY tables and columns present in the provided schema
+      - Always qualify tables with demo.stage_canonical.<table>
+      - Ignore any other catalog/schema names that may appear in the question
+      - Never invent tables or columns not present in the schema
+
+      Join and selection rules:
+      - Always use explicit JOIN ... ON ... syntax
+      - Do NOT use NATURAL JOIN or implicit joins in the WHERE clause
+      - Do NOT use SELECT *
+      - Use DISTINCT when joins could create duplicate rows for the entity being counted or listed
+
+      Domain rules:
+      - A movie is defined as title_type.title_type_name = 'movie'
+      - A series is defined as title_type.title_type_name = 'tvSeries'
+      - An episode is defined as title_type.title_type_name = 'tvEpisode'
+      - ANY question mentioning "movie" or "movies" requires:
+        - JOIN demo.stage_canonical.title_type
+        - Filter title_type.title_type_name = 'movie'
+      - NEVER use title_type_id = 'movie' (title_type_id is an opaque ID)
+      - Genre: the title table has NO genre_id
+        - To use genres, you MUST join via genre_title and genre
+        - title.title_id = genre_title.title_id
+        - genre_title.genre_id = genre.genre_id
+      - "Actor" / "actress" / "leading role" refer to people with role.role_name IN ('actor', 'actress')
+      - Use title_person_role + role for questions about roles on specific titles
+      - Use role_person + role for questions about professions in general (e.g. "all directors") not tied to a specific title
+
+      Time and aggregation rules:
+      - release_year is an INT, not a DATE
+      - NEVER use YEAR(release_year)
+      - "Last N years" → release_year >= YEAR(CURRENT_DATE()) - N
+      - "For each year" → GROUP BY release_year across all years unless the question specifies a year filter
+      - Exclude NULL ratings when ranking or averaging (add average_rating IS NOT NULL)
+      - "At least N movies" → HAVING COUNT(DISTINCT title_id) >= N when counting movies
+      - Put row-level filters (e.g. average_rating IS NOT NULL) in WHERE so the COUNT only considers matching rows
+      - "Highest rated" / "best rated" / "top rated" → ORDER BY average_rating DESC
+      - "Most popular" / "most voted" → ORDER BY number_of_votes DESC
+      - "Longest" / "runtime" → ORDER BY duration_minutes DESC
+      - "Recent" / "latest" → ORDER BY release_year DESC
+      - "Oldest" → ORDER BY release_year ASC
+      - When returning aggregated metrics (e.g. average rating per genre), add an ORDER BY that matches the intent (DESC for highest/most, ASC for lowest/oldest)
+
+      Percentages and shares:
+      - "Share" or "percentage" → compute as a fraction between 0 and 1
+        - Example: SUM(CASE WHEN condition THEN 1 ELSE 0 END) / COUNT(*) AS share
+        - For 20% use share > 0.2, NOT share > 20
+
+      String matching:
+      - Use LOWER(column) LIKE '%value%' for substring matching
+      - Lowercase the value literal and wrap the column in LOWER(...)
+
+      Localization rules:
+      - Use title_localized for localized titles
+      - Use languages, regions, and attribute tables via their foreign key relationships
+      - "Original title" → is_original_title = true
+      - "Alternative title" → attribute.attribute_name = 'Alternative title'
+      - "In English" → languages.language_name = 'English' OR languages.language_code = 'en'
+      - "In the US" / "USA" / "United States" → regions.region_name = 'United States' OR regions.region_code = 'US'
+
+      Result size rules:
+      - "Top N" or "first N" with an explicit number → use LIMIT N
+      - "For each X" / "per X" without an explicit limit → do NOT add LIMIT
+      - "Top N per group" (e.g. top 3 per genre, top 3 directors per year) → use ROW_NUMBER() OVER (PARTITION BY ... ORDER BY metric DESC) and filter WHERE rn <= N
+      - "Directors/actors with highest X" without "top N" → return all matching rows ordered by X DESC with no LIMIT
+
+      Good vs bad patterns:
+      - WRONG: using title.genre_id directly
+        - RIGHT: join via genre_title and genre
+      - WRONG: filtering by title_type_id = 'movie'
+        - RIGHT: join title_type and filter title_type_name = 'movie'
+
+      Output format:
+      - Your entire response MUST be exactly one Spark SQL SELECT statement ending with a semicolon
+      - Do NOT add any text before or after the SQL
+
+    user_template: |
+      DATABASE SCHEMA (read-only, do not modify):
+      {{ schema_block }}
+
+      SEMANTIC LAYER (natural language mappings and rules):
+      {{ semantic_block }}
+
+      SQL CONTRACT (STRICT):
+
+      Output rules:
+      - Output exactly ONE Spark SQL SELECT query and nothing else
+      - Do NOT include explanations, comments, markdown, or code fences
+      - The SQL query MUST end with a semicolon
+
+      SQL generation rules:
+      - Use ONLY tables and columns present in the schema_block
+      - Always qualify tables with demo.stage_canonical.<table>
+      - Ignore any other catalog/schema references in the question
+      - Always use explicit JOIN syntax (JOIN ... ON ...)
+      - Do NOT use SELECT *
+      - Use DISTINCT when joins could create duplicate rows for the entity being listed or counted
+      - Follow all domain, time, aggregation, genre, role, and localization rules specified above and in the semantic layer
+
+      Domain-specific rules:
+      - Movies, series, and episodes MUST be resolved via title_type.title_type_name
+      - Genres MUST be resolved via genre_title and genre
+      - People’s roles on specific titles MUST use title_person_role + role
+      - Professions independent of titles MUST use role_person + role
+
+      Examples (follow the same patterns, but adapt to the question):
+
+      EXAMPLE 1 (simple top N):
+      Question:
+      List the 5 highest-rated movies released in 2019
+
+      SQL:
+      SELECT
+        t.primary_title,
+        t.average_rating
+      FROM demo.stage_canonical.title t
+      JOIN demo.stage_canonical.title_type tt
+        ON t.title_type_id = tt.title_type_id
+      WHERE tt.title_type_name = 'movie'
+        AND t.release_year = 2019
+        AND t.average_rating IS NOT NULL
+      ORDER BY t.average_rating DESC
+      LIMIT 5;
+
+      EXAMPLE 2 (top N per group using ROW_NUMBER):
+      Question:
+      For each genre, list the top 3 movies by rating released in the last 10 years.
+
+      SQL:
+      SELECT genre_name, primary_title, release_year, average_rating
+      FROM (
+        SELECT g.genre_name, t.primary_title, t.release_year,
+              t.average_rating,
+              ROW_NUMBER() OVER (PARTITION BY g.genre_name ORDER BY t.average_rating DESC) AS rn
+        FROM demo.stage_canonical.title t
+        JOIN demo.stage_canonical.title_type tt ON t.title_type_id = tt.title_type_id
+        JOIN demo.stage_canonical.genre_title gt ON t.title_id = gt.title_id
+        JOIN demo.stage_canonical.genre g ON gt.genre_id = g.genre_id
+        WHERE tt.title_type_name = 'movie'
+          AND t.release_year >= YEAR(CURRENT_DATE()) - 10
+          AND t.average_rating IS NOT NULL
+      ) ranked
+      WHERE rn <= 3;
+
+      EXAMPLE 3 (last N years - release_year is INT):
+      Question:
+      For each year in the last 20 years, find the genre with the highest average rating.
+
+      SQL:
+      SELECT release_year, genre_name, avg_rating
+      FROM (
+        SELECT t.release_year, g.genre_name,
+              AVG(t.average_rating) AS avg_rating,
+              ROW_NUMBER() OVER (PARTITION BY t.release_year ORDER BY AVG(t.average_rating) DESC) AS rn
+        FROM demo.stage_canonical.title t
+        JOIN demo.stage_canonical.genre_title gt ON t.title_id = gt.title_id
+        JOIN demo.stage_canonical.genre g ON gt.genre_id = g.genre_id
+        WHERE t.release_year >= YEAR(CURRENT_DATE()) - 20
+          AND t.average_rating IS NOT NULL
+        GROUP BY t.release_year, g.genre_name
+      ) ranked
+      WHERE rn = 1;
+
+      EXAMPLE 4 (top N per time period - top 3 directors per year):
+      Question:
+      For each of the last 5 years, list the top 3 directors by average rating.
+
+      SQL:
+      SELECT release_year, name, avg_rating
+      FROM (
+        SELECT t.release_year, p.name,
+              ROUND(AVG(t.average_rating), 2) AS avg_rating,
+              ROW_NUMBER() OVER (PARTITION BY t.release_year ORDER BY AVG(t.average_rating) DESC) AS rn
+        FROM demo.stage_canonical.title t
+        JOIN demo.stage_canonical.title_type tt ON t.title_type_id = tt.title_type_id
+        JOIN demo.stage_canonical.title_person_role tpr ON t.title_id = tpr.title_id
+        JOIN demo.stage_canonical.person p ON tpr.person_id = p.person_id
+        JOIN demo.stage_canonical.role r ON tpr.role_id = r.role_id
+        WHERE r.role_name = 'director'
+          AND tt.title_type_name = 'movie'
+          AND t.release_year >= YEAR(CURRENT_DATE()) - 5
+          AND t.average_rating IS NOT NULL
+        GROUP BY t.release_year, p.name
+        HAVING COUNT(*) >= 3
+      ) ranked
+      WHERE rn <= 3;
+
+      EXAMPLE 5 (rating vs average of same year+genre - use CTE):
+      Question:
+      Find movies that improved the most vs average rating of movies in the same year and genre.
+
+      SQL:
+      WITH yearly_genre_avg AS (
+        SELECT t.release_year, g.genre_id, AVG(t.average_rating) AS avg_rating
+        FROM demo.stage_canonical.title t
+        JOIN demo.stage_canonical.title_type tt ON t.title_type_id = tt.title_type_id
+        JOIN demo.stage_canonical.genre_title gt ON t.title_id = gt.title_id
+        JOIN demo.stage_canonical.genre g ON gt.genre_id = g.genre_id
+        WHERE tt.title_type_name = 'movie' AND t.average_rating IS NOT NULL
+        GROUP BY t.release_year, g.genre_id
+      )
+      SELECT t.primary_title, t.release_year,
+            t.average_rating - yga.avg_rating AS rating_improvement
+      FROM demo.stage_canonical.title t
+      JOIN demo.stage_canonical.title_type tt ON t.title_type_id = tt.title_type_id
+      JOIN demo.stage_canonical.genre_title gt ON t.title_id = gt.title_id
+      JOIN yearly_genre_avg yga ON t.release_year = yga.release_year AND gt.genre_id = yga.genre_id
+      WHERE tt.title_type_name = 'movie' AND t.average_rating IS NOT NULL
+      ORDER BY rating_improvement DESC
+      LIMIT 10;
+
+      EXAMPLE 6 (localization – original English title in the US):
+      Question:
+      For each movie released in 2020, return its original English title used in the United States.
+
+      SQL:
+      SELECT
+        t.primary_title,
+        tl.title AS us_english_original_title
+      FROM demo.stage_canonical.title t
+      JOIN demo.stage_canonical.title_type tt
+        ON t.title_type_id = tt.title_type_id
+      JOIN demo.stage_canonical.title_localized tl
+        ON t.title_id = tl.title_id
+      JOIN demo.stage_canonical.languages lang
+        ON tl.language_id = lang.language_id
+      JOIN demo.stage_canonical.regions r
+        ON tl.region_id = r.region_id
+      WHERE tt.title_type_name = 'movie'
+        AND t.release_year = 2020
+        AND tl.is_original_title = true
+        AND (lang.language_name = 'English' OR lang.language_code = 'en')
+        AND (r.region_name = 'United States' OR r.region_code = 'US');
+
+      TASK:
+      Generate a single Spark SQL SELECT query that answers the following question:
+
+      "{{ question }}"
+     
+    schema_block: |
+      {
+        "catalog": "demo",
+        "schema": "stage_canonical",
+        "tables": [
+          {
+            "name": "title",
+            "description": "Core table representing IMDb-style titles such as movies, TV series, and episodes. IMPORTANT: this table has NO genre_id; genres must be resolved via the genre_title bridge table.",
+            "foreign_keys": [
+              { "column": "title_type_id", "references": "title_type.title_type_id" }
+            ],
+            "columns": [
+              { "name": "title_id", "description": "Primary key identifying a title", "type": "string" },
+              { "name": "title_type_id", "description": "Foreign key indicating the type of title", "type": "string" },
+              { "name": "primary_title", "description": "Main display title used by IMDb", "type": "string" },
+              { "name": "original_title", "description": "Original title in the language of production", "type": "string" },
+              { "name": "is_adult", "description": "Indicates whether the title is intended for adults", "type": "boolean" },
+              { "name": "release_year", "description": "Year the title was first released (integer, not a date)", "type": "int" },
+              { "name": "duration_minutes", "description": "Runtime of the title in minutes", "type": "int" },
+              { "name": "average_rating", "description": "Average IMDb user rating for the title", "type": "double" },
+              { "name": "number_of_votes", "description": "Number of user votes contributing to the average rating", "type": "int" }
+            ]
+          },
+          {
+            "name": "title_type",
+            "description": "Lookup table for title types. Filter by title_type_name (e.g. 'movie'), NOT by title_type_id. Always JOIN from title.",
+            "columns": [
+              { "name": "title_type_id", "description": "Primary key identifying a title type", "type": "string" },
+              { "name": "title_type_name", "description": "Name of the title type (e.g. movie, tvSeries, tvEpisode)", "type": "string" }
+            ]
+          },
+          {
+            "name": "person",
+            "description": "Master table containing people involved in titles, such as actors, directors, writers, and other crew members.",
+            "columns": [
+              { "name": "person_id", "description": "Primary key identifying a person", "type": "string" },
+              { "name": "name", "description": "Full name of the person", "type": "string" },
+              { "name": "birth_year", "description": "Year the person was born", "type": "int" },
+              { "name": "death_year", "description": "Year the person died, if applicable", "type": "int" }
+            ]
+          },
+          {
+            "name": "role",
+            "description": "Lookup table defining high-level roles a person can have in relation to a title (e.g. actor, director). Use role_name for filtering.",
+            "columns": [
+              { "name": "role_id", "description": "Primary key identifying a role", "type": "string" },
+              { "name": "role_name", "description": "Name of the role (e.g. actor, director)", "type": "string" }
+            ]
+          },
+          {
+            "name": "genre",
+            "description": "Lookup table containing all possible genres that can be associated with titles.",
+            "columns": [
+              { "name": "genre_id", "description": "Primary key identifying a genre", "type": "string" },
+              { "name": "genre_name", "description": "Name of the genre (e.g. Drama, Comedy, Action)", "type": "string" }
+            ]
+          },
+          {
+            "name": "attribute",
+            "description": "Lookup table describing attributes associated with localized titles, such as alternative titles, original titles, or other naming qualifiers.",
+            "columns": [
+              { "name": "attribute_id", "description": "Primary key identifying a title attribute", "type": "string" },
+              { "name": "attribute_name", "description": "Human-readable name of the title attribute", "type": "string" }
+            ]
+          },
+          {
+            "name": "languages",
+            "description": "Reference table of supported language codes.",
+            "columns": [
+              { "name": "language_id", "description": "Stable surrogate key for the language", "type": "bigint" },
+              { "name": "language_code", "description": "ISO 639 language code", "type": "string" },
+              { "name": "iso_standard", "description": "ISO standard or classification for the language code", "type": "string" },
+              { "name": "language_name", "description": "English display name of the language", "type": "string" },
+              { "name": "notes", "description": "Additional context such as macrolanguage, historical usage, or private-use notes", "type": "string" }
+            ]
+          },
+          {
+            "name": "regions",
+            "description": "Reference table of regions and countries based on ISO 3166-1.",
+            "columns": [
+              { "name": "region_id", "description": "Surrogate identifier for the region", "type": "bigint" },
+              { "name": "region_code", "description": "Region or country code as received from source systems", "type": "string" },
+              { "name": "iso_standard", "description": "Classification of the region code standard", "type": "string" },
+              { "name": "region_name", "description": "Canonical English name of the region or country", "type": "string" },
+              { "name": "notes", "description": "Optional contextual notes describing historical status, political changes, or source-specific meaning", "type": "string" }
+            ]
+          },
+          {
+            "name": "genre_title",
+            "description": "Bridge table mapping titles to genres. A title can belong to multiple genres.",
+            "foreign_keys": [
+              { "column": "title_id", "references": "title.title_id" },
+              { "column": "genre_id", "references": "genre.genre_id" }
+            ],
+            "join_hint": "title.title_id = genre_title.title_id AND genre_title.genre_id = genre.genre_id",
+            "columns": [
+              { "name": "title_id", "description": "Foreign key to title", "type": "string" },
+              { "name": "genre_id", "description": "Foreign key to genre", "type": "string" }
+            ]
+          },
+          {
+            "name": "title_person_role",
+            "description": "Fact table linking titles, people, and roles. number_of_roles = roles in ONE title. For 'at least N movies' use HAVING COUNT(DISTINCT title_id) >= N when counting movies.",
+            "foreign_keys": [
+              { "column": "title_id", "references": "title.title_id" },
+              { "column": "person_id", "references": "person.person_id" },
+              { "column": "role_id", "references": "role.role_id" }
+            ],
+            "join_hint": "title.title_id = title_person_role.title_id AND title_person_role.person_id = person.person_id AND title_person_role.role_id = role.role_id",
+            "columns": [
+              { "name": "title_id", "description": "Foreign key to the title", "type": "string" },
+              { "name": "person_id", "description": "Foreign key to the person", "type": "string" },
+              { "name": "role_id", "description": "Foreign key to the role", "type": "string" },
+              { "name": "job", "description": "Specific job performed by the person on the title", "type": "string" },
+              { "name": "number_of_roles", "description": "Number of distinct roles performed by the person in the title", "type": "bigint" },
+              { "name": "characters", "description": "Character names portrayed by the person, if applicable", "type": "map" }
+            ]
+          },
+          {
+            "name": "role_person",
+            "description": "Bridge table mapping people to roles they can perform, independent of a specific title. Use for questions about professions (e.g. 'all directors').",
+            "foreign_keys": [
+              { "column": "person_id", "references": "person.person_id" },
+              { "column": "role_id", "references": "role.role_id" }
+            ],
+            "join_hint": "person.person_id = role_person.person_id AND role.role_id = role_person.role_id",
+            "columns": [
+              { "name": "person_id", "description": "Foreign key to person", "type": "string" },
+              { "name": "role_id", "description": "Foreign key to role", "type": "string" },
+              { "name": "job", "description": "Specific job description associated with the role", "type": "string" }
+            ]
+          },
+          {
+            "name": "title_localized",
+            "description": "Table containing localized versions of titles by region and language, including alternative and original titles.",
+            "foreign_keys": [
+              { "column": "title_id", "references": "title.title_id" },
+              { "column": "region_id", "references": "regions.region_id" },
+              { "column": "language_id", "references": "languages.language_id" },
+              { "column": "attribute_id", "references": "attribute.attribute_id" }
+            ],
+            "join_hint": "title.title_id = title_localized.title_id AND title_localized.region_id = regions.region_id AND title_localized.language_id = languages.language_id AND title_localized.attribute_id = attribute.attribute_id",
+            "columns": [
+              { "name": "title_id", "description": "Foreign key to the title", "type": "string" },
+              { "name": "title", "description": "Localized title text", "type": "string" },
+              { "name": "ordering", "description": "Ordering index when multiple localized titles exist", "type": "int" },
+              { "name": "region_id", "description": "Region where the localized title is used", "type": "bigint" },
+              { "name": "language_id", "description": "Language of the localized title", "type": "bigint" },
+              { "name": "attribute_id", "description": "Attribute describing the type of localized title", "type": "string" },
+              { "name": "is_original_title", "description": "Indicates whether this is the original title for the region/language", "type": "boolean" }
+            ]
+          },
+          {
+            "name": "title_episode",
+            "description": "Table representing episodic relationships between titles, linking episodes to their parent TV series.",
+            "foreign_keys": [
+              { "column": "episode_title_id", "references": "title.title_id" },
+              { "column": "series_title_id", "references": "title.title_id" }
+            ],
+            "join_hint": "Episode: title_episode.episode_title_id = title.title_id. Parent series: title_episode.series_title_id = title.title_id. Use aliases (e.g. t_ep, t_series) when joining both.",
+            "columns": [
+              { "name": "episode_title_id", "description": "Foreign key to the episode title", "type": "string" },
+              { "name": "series_title_id", "description": "Foreign key to the TV series title", "type": "string" },
+              { "name": "season_number", "description": "Season number of the episode", "type": "int" },
+              { "name": "episode_number", "description": "Episode number within the season", "type": "int" }
+            ]
+          }
+        ]
+      }
+
+    semantic_block: |
+      {
+        "semantic_layer": {
+          "version": "1.0",
+          "purpose": "Natural language to Spark SQL translation",
+          "domain": "Movies, TV, people, localization",
+
+          "global_rules": [
+            "Always generate SQL using explicit joins (JOIN ... ON ...).",
+            "Prefer human-readable labels (names) over IDs in filters whenever possible.",
+            "Resolve IDs via joins; never hardcode title_type_id, genre_id, role_id, or other surrogate IDs.",
+            "Use bridge tables for many-to-many relationships (genre_title, title_person_role, role_person).",
+            "Assume filters are combined with AND unless explicitly stated otherwise in the question.",
+            "Only use entities, tables, and relationships defined in this semantic layer and the schema.",
+            "When joins can cause duplicate titles, use COUNT(DISTINCT title_id) when counting movies, series, or episodes."
+          ],
+
+          "nl_aliases": {
+            "movie": ["film", "motion picture"],
+            "tvSeries": ["TV series", "TV show", "series", "television series"],
+            "tvEpisode": ["episode", "TV episode"],
+            "actor": ["actor", "actress", "performer"],
+            "director": ["director", "filmmaker"]
+          },
+
+          "aggregation_rules": [
+            "highest rated / best rated / top rated → ORDER BY average_rating DESC and filter average_rating IS NOT NULL.",
+            "most popular / most voted → ORDER BY number_of_votes DESC.",
+            "longest / runtime → ORDER BY duration_minutes DESC.",
+            "recent / latest → ORDER BY release_year DESC.",
+            "oldest → ORDER BY release_year ASC.",
+            "top N per group → use ROW_NUMBER() OVER (PARTITION BY group_col ORDER BY metric DESC) and filter WHERE rn <= N.",
+            "rating vs average of same year+genre → use a CTE: compute AVG per (release_year, genre_id) from title + genre_title + genre, then join back.",
+            "for each year (all years) → GROUP BY release_year with no year filter unless the question specifies a restriction.",
+            "at least N movies → HAVING COUNT(DISTINCT title_id) >= N when counting movies; apply row-level filters in WHERE."
+          ],
+
+          "entities": {
+            "title": {
+              "table": "title",
+              "primary_key": "title_id",
+              "attributes": {
+                "title_id": "id",
+                "primary_title": "string",
+                "original_title": "string",
+                "release_year": "integer",
+                "duration_minutes": "integer",
+                "average_rating": "double",
+                "number_of_votes": "integer",
+                "is_adult": "boolean"
+              },
+              "relationships": {
+                "type": {
+                  "entity": "title_type",
+                  "join": "title.title_type_id = title_type.title_type_id"
+                },
+                "genres": {
+                  "entity": "genre",
+                  "bridge": "genre_title",
+                  "joins": [
+                    "title.title_id = genre_title.title_id",
+                    "genre_title.genre_id = genre.genre_id"
+                  ]
+                },
+                "people": {
+                  "entity": "person",
+                  "bridge": "title_person_role",
+                  "joins": [
+                    "title.title_id = title_person_role.title_id",
+                    "title_person_role.person_id = person.person_id"
+                  ]
+                },
+                "localized_titles": {
+                  "entity": "title_localized",
+                  "join": "title.title_id = title_localized.title_id"
+                },
+                "episodes": {
+                  "entity": "title_episode",
+                  "join": "title.title_id = title_episode.series_title_id"
+                }
+              }
+            },
+
+            "title_type": {
+              "table": "title_type",
+              "primary_key": "title_type_id",
+              "label_column": "title_type_name",
+              "values": [
+                "movie",
+                "short",
+                "tvSeries",
+                "tvEpisode",
+                "tvMiniSeries",
+                "tvMovie",
+                "tvSpecial",
+                "tvShort",
+                "tvPilot",
+                "video",
+                "videoGame"
+              ],
+              "rules": [
+                "Filtering by title type requires a join from title to title_type.",
+                "Movies are titles where title_type_name = 'movie'.",
+                "TV series are titles where title_type_name = 'tvSeries'.",
+                "Episodes are titles where title_type_name = 'tvEpisode'.",
+                "Never compare title_type_id directly to strings like 'movie'; always use title_type_name."
+              ]
+            },
+
+            "genre": {
+              "table": "genre",
+              "primary_key": "genre_id",
+              "label_column": "genre_name",
+              "rules": [
+                "Genre filters require joining through genre_title.",
+                "Multiple genre filters imply AND semantics unless stated otherwise (the title must have all specified genres)."
+              ]
+            },
+
+            "genre_title": {
+              "table": "genre_title",
+              "description": "Bridge table: titles ↔ genres (many-to-many).",
+              "relationships": {
+                "title": "title.title_id = genre_title.title_id",
+                "genre": "genre.genre_id = genre_title.genre_id"
+              }
+            },
+
+            "title_episode": {
+              "table": "title_episode",
+              "description": "Bridge table linking episodes to their parent TV series. episode_title_id = episode (title), series_title_id = parent series (title).",
+              "relationships": {
+                "episode": "title.title_id = title_episode.episode_title_id",
+                "series": "title.title_id = title_episode.series_title_id"
+              },
+              "rules": [
+                "For series → episodes: join from the series title to title_episode.series_title_id, then to the episode titles via episode_title_id.",
+                "For episode → parent series: join from the episode title to title_episode.episode_title_id, then to the parent series via series_title_id.",
+                "Use clear aliases (e.g. t_series, t_episode) when joining both series and episode titles."
+              ]
+            },
+
+            "person": {
+              "table": "person",
+              "primary_key": "person_id",
+              "attributes": {
+                "name": "string",
+                "birth_year": "integer",
+                "death_year": "integer"
+              }
+            },
+
+            "role": {
+              "table": "role",
+              "primary_key": "role_id",
+              "label_column": "role_name",
+              "groups": {
+                "acting": ["actor", "actress", "self"],
+                "directing": ["director", "assistant_director"],
+                "writing": ["writer"],
+                "producing": ["producer", "executive"],
+                "music": ["composer", "music_artist"],
+                "technical": [
+                  "cinematographer",
+                  "editor",
+                  "visual_effects",
+                  "sound_department"
+                ]
+              },
+              "rules": [
+                "Role filters require a join via title_person_role when talking about roles on specific titles.",
+                "Use role.role_name for filtering, not the job column.",
+                "'Leading role' or 'lead actor' → use role.role_name IN ('actor', 'actress')."
+              ]
+            },
+
+            "title_person_role": {
+              "table": "title_person_role",
+              "relationships": {
+                "title": "title.title_id = title_person_role.title_id",
+                "person": "person.person_id = title_person_role.person_id",
+                "role": "role.role_id = title_person_role.role_id"
+              },
+              "rules": [
+                "Use this table when the question relates people to specific titles (e.g. actors in a movie, directors of a movie).",
+                "number_of_roles counts roles within a single title, not number of movies."
+              ]
+            },
+
+            "role_person": {
+              "table": "role_person",
+              "description": "Bridge table mapping people to roles they can perform at the career level. Use for questions about professions that are not tied to specific titles.",
+              "relationships": {
+                "person": "person.person_id = role_person.person_id",
+                "role": "role.role_id = role_person.role_id"
+              },
+              "rules": [
+                "Use when the question asks for people by profession (e.g. 'list all directors', 'actors born after 1970') without mentioning specific titles.",
+                "Do not use this table to infer roles on specific titles; use title_person_role instead."
+              ]
+            },
+
+            "language": {
+              "table": "languages",
+              "primary_key": "language_id",
+              "label_column": "language_name",
+              "code_column": "language_code",
+              "rules": [
+                "Language filters apply via title_localized.language_id.",
+                "Accept both language names (e.g. 'English') and ISO codes (e.g. 'en') when interpreting the question."
+              ]
+            },
+
+            "region": {
+              "table": "regions",
+              "primary_key": "region_id",
+              "label_column": "region_name",
+              "code_column": "region_code",
+              "rules": [
+                "Region filters apply via title_localized.region_id.",
+                "Accept region names (e.g. 'United States') or region codes (e.g. 'US')."
+              ]
+            },
+
+            "attribute": {
+              "table": "attribute",
+              "primary_key": "attribute_id",
+              "label_column": "attribute_name",
+              "rules": [
+                "Attribute filters apply via title_localized.attribute_id.",
+                "Common values include 'Original title', 'Alternative title', 'DVD', 'DVD release'."
+              ]
+            },
+
+            "title_localized": {
+              "table": "title_localized",
+              "attributes": {
+                "title": "string",
+                "ordering": "integer",
+                "is_original_title": "boolean"
+              },
+              "relationships": {
+                "language": "languages.language_id = title_localized.language_id",
+                "region": "regions.region_id = title_localized.region_id",
+                "attribute": "attribute.attribute_id = title_localized.attribute_id"
+              },
+              "nl_rules": {
+                "original title": "is_original_title = true",
+                "alternative title": "attribute.attribute_name = 'Alternative title'",
+                "in English": "languages.language_name = 'English' OR languages.language_code = 'en'",
+                "in the US": "regions.region_name = 'United States' OR regions.region_code = 'US'",
+                "USA": "regions.region_name = 'United States' OR regions.region_code = 'US'",
+                "United States": "regions.region_name = 'United States' OR regions.region_code = 'US'"
+              }
+            }
+          }
+        }
+      }
+
+  sampling:
+    temperature: 0.05
+    top_p: 0.8

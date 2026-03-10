@@ -1,5 +1,6 @@
 from .state import RunnerState
 from . import capabilities
+import re
 
 def generate_llm_response_node(state: RunnerState) -> dict:
     llm_response = capabilities.generate_sql_query_by_LLM(state["user_query"], state["prompt_config"])
@@ -9,14 +10,18 @@ def load_prompt_configuration_node(state: RunnerState) -> dict:
     prompt_config = capabilities.load_prompt_configuration(state["model"], state["version"])
     return {"prompt_config": prompt_config}
 
-def execute_sql_query_node(state: RunnerState) -> dict:
+def execute_sql_node(state: RunnerState) -> dict:
+    # If a previous node already produced an error, skip execution
+    if state.get("error"):
+        return {}
+
     try:
         db_result = capabilities.execute_sql_query(state["sql_sanitised"])
         return {"db_result": db_result}
     except Exception as e:
         return {"error": str(e)}
 
-def repair_sql_query_node(state: RunnerState) -> dict:
+def repair_sql_node(state: RunnerState) -> dict:
     history = state["history"] + [{"sql": state["sql"], "error": state["error"]}]
     sql = capabilities.retry_sql(state["user_query"], history)
     return {
@@ -26,7 +31,7 @@ def repair_sql_query_node(state: RunnerState) -> dict:
         "error": None,
     }
 
-def sanitize_sql_query_node(state: RunnerState) -> dict:
+def sanitize_sql_node(state: RunnerState) -> dict:
     """
     Strip ```sql``` blocks, leading/trailing whitespace, etc.
     Add 'LIMIT 10' if no LIMIT is present in the query.
@@ -48,3 +53,60 @@ def sanitize_sql_query_node(state: RunnerState) -> dict:
             sql += ";"
     
     return {"sql_sanitised": sql}
+
+FORBIDDEN_KEYWORDS = [
+    "insert",
+    "update",
+    "delete",
+    "drop",
+    "alter",
+    "create",
+    "truncate",
+    "merge",
+    "grant",
+    "revoke"
+]
+
+def validate_sql_node(state):
+    sql = state.get("sql_sanitised")
+
+    if not sql:
+        state["error"] = "No SQL query generated"
+        return state
+
+    query = sql.strip().lower()
+
+    # -------------------------
+    # Rule 1: SELECT only (including CTE: WITH ... SELECT)
+    # -------------------------
+
+    if not (query.startswith("select") or query.startswith("with")):
+        state["error"] = "Only SELECT queries are allowed"
+        return state
+
+    # -------------------------
+    # Rule 2: forbid DDL/DML
+    # -------------------------
+
+    for keyword in FORBIDDEN_KEYWORDS:
+        if re.search(rf"\b{keyword}\b", query):
+            state["error"] = f"Forbidden SQL keyword detected: {keyword}"
+            return state
+
+    # -------------------------
+    # Rule 3: prevent multi statements
+    # -------------------------
+
+    if ";" in query[:-1]:
+        state["error"] = "Multiple SQL statements are not allowed"
+        return state
+
+    # -------------------------
+    # Rule 4: enforce LIMIT
+    # -------------------------
+
+    if "limit" not in query:
+        state["error"] = "Query must include a LIMIT clause"
+        return state
+
+    return state
