@@ -1,0 +1,61 @@
+version: 2
+
+seeds:
+  - name: title_variant_pattern_map
+    description: >
+      Reference table defining pattern-based classification rules
+      for IMDb title attribute values. Each row contains a SQL LIKE
+      pattern used to match raw attribute names from the IMDb
+      `title_akas` dataset and assign them to a normalized
+      variant category used in the canonical (silver) layer.
+
+      Patterns are evaluated using case-insensitive matching.
+      If multiple patterns match the same attribute value,
+      the rule with the lowest priority value takes precedence.
+
+      This seed allows title attribute classification logic
+      to remain data-driven and version-controlled instead of
+      hard-coded in transformation SQL.
+
+    columns:
+      - name: pattern
+        data_type: string
+        description: >
+          SQL LIKE pattern used to match raw attribute values
+          from the IMDb dataset. Wildcards (%) allow matching
+          substrings such as '%festival%' or '%director%cut%'.
+          Patterns are evaluated using case-insensitive matching.
+        tests:
+          - not_null
+          - unique
+
+      - name: variant_category
+        data_type: string
+        description: >
+          Normalized category assigned when the pattern matches
+          an attribute value. Categories group similar attribute
+          semantics to simplify modeling and analytics.
+
+          Typical categories include:
+          - version: alternative edits or cuts of a title
+          - distribution: titles used for specific media formats
+          - festival: titles used for film festivals or premieres
+          - translation: translated or transliterated titles
+          - marketing: promotional or advertising titles
+          - release_context: titles used during the release lifecycle
+          - episode_context: season, episode, or segment titles
+          - unofficial: incorrect, bootleg, or rumored titles
+          - other: fallback classification when no rule applies
+        tests:
+          - not_null
+
+      - name: priority
+        data_type: integer
+        description: >
+          Numeric precedence used when multiple patterns match
+          the same attribute value. Lower values indicate higher
+          priority and are selected first during classification.
+          This prevents generic patterns from overriding more
+          specific matching rules.
+        tests:
+          - not_null

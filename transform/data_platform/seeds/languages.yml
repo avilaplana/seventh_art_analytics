@@ -9,7 +9,7 @@ seeds:
     description: Reference table of supported language codes
     columns:
       - name: language_id
-        type: int
+        type: bigint
         description: Stable surrogate key for the language
         tests:
           - unique

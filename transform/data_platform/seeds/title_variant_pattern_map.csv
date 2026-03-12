@@ -1,0 +1,11 @@
+pattern,variant_category,priority
+%director%cut%,version,10
+%short version%,version,20
+%dvd%,distribution,10
+%video%,distribution,10
+%festival%,festival,10
+%translation%,translation,10
+%poster%,marketing,10
+%reissue%,release_context,10
+%season%,episode_context,10
+%bootleg%,unofficial,10

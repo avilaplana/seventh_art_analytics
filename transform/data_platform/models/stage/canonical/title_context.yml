@@ -19,6 +19,25 @@ models:
         tests:
           - not_null
           - unique
+      - name: title_context_category
+        data_type: string
+        description: >
+          Normalized category assigned when the pattern matches
+          an attribute value. Categories group similar attribute
+          semantics to simplify modeling and analytics.
+
+          Typical categories include:
+          - version: alternative edits or cuts of a title
+          - distribution: titles used for specific media formats
+          - festival: titles used for film festivals or premieres
+          - translation: translated or transliterated titles
+          - marketing: promotional or advertising titles
+          - release_context: titles used during the release lifecycle
+          - episode_context: season, episode, or segment titles
+          - unofficial: incorrect, bootleg, or rumored titles
+          - other: fallback classification when no rule applies
+        tests:
+          - not_null          
       - name: ingested_at_timestamp
         data_type: timestamp
 
