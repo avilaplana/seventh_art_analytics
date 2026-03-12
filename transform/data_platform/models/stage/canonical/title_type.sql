@@ -10,7 +10,7 @@
 )
 
 SELECT
-    UUID() AS title_type_id,
+    {{ dbt_utils.generate_surrogate_key(['title_type_name']) }} AS title_type_id,
     title_type_name,
     snapshot_date,
     ingested_at_timestamp,

@@ -22,7 +22,7 @@ distinct_genres AS (
 )
 
 SELECT
-    UUID() AS genre_id,
+    {{ dbt_utils.generate_surrogate_key(['genre_name']) }} AS genre_id,
     genre_name,
     snapshot_date,
     ingested_at_timestamp,

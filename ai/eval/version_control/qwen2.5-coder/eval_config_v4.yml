@@ -226,7 +226,7 @@ eval_config:
             "name": "attribute",
             "description": "Lookup table describing attributes associated with localized titles, such as alternative titles, original titles, or other naming qualifiers.",
             "columns": [
-              {"name": "attribute_id", "description": "Primary key identifying a title attribute", "type": "string"},
+              {"name": "title_context_id", "description": "Primary key identifying a title attribute", "type": "string"},
               {"name": "attribute_name", "description": "Human-readable name of the title attribute", "type": "string"}
             ]
           },
@@ -304,16 +304,16 @@ eval_config:
               {"column": "title_id", "references": "title.title_id"},
               {"column": "region_id", "references": "regions.region_id"},
               {"column": "language_id", "references": "languages.language_id"},
-              {"column": "attribute_id", "references": "attribute.attribute_id"}
+              {"column": "title_context_id", "references": "attribute.title_context_id"}
             ],
-            "join_hint": "title.title_id = title_localized.title_id, title_localized.region_id = regions.region_id, title_localized.language_id = languages.language_id, title_localized.attribute_id = attribute.attribute_id",
+            "join_hint": "title.title_id = title_localized.title_id, title_localized.region_id = regions.region_id, title_localized.language_id = languages.language_id, title_localized.title_context_id = attribute.title_context_id",
             "columns": [
               {"name": "title_id", "description": "Foreign key to the title", "type": "string"},
               {"name": "title", "description": "Localized title text", "type": "string"},
               {"name": "ordering", "description": "Ordering index when multiple localized titles exist", "type": "int"},
               {"name": "region_id", "description": "Region where the localized title is used", "type": "bigint"},
               {"name": "language_id", "description": "Language of the localized title", "type": "bigint"},
-              {"name": "attribute_id", "description": "Attribute describing the type of localized title", "type": "string"},
+              {"name": "title_context_id", "description": "Attribute describing the type of localized title", "type": "string"},
               {"name": "is_original_title", "description": "Indicates whether this is the original title for the region/language", "type": "boolean"}
             ]
           },
@@ -549,10 +549,10 @@ eval_config:
 
             "attribute": {
               "table": "attribute",
-              "primary_key": "attribute_id",
+              "primary_key": "title_context_id",
               "label_column": "attribute_name",
               "rules": [
-                "Attribute filters apply via title_localized.attribute_id",
+                "Attribute filters apply via title_localized.title_context_id",
                 "Common values: 'Original title', 'Alternative title', 'DVD', 'DVD release'"
               ]
             },
@@ -567,7 +567,7 @@ eval_config:
               "relationships": {
                 "language": "languages.language_id = title_localized.language_id",
                 "region": "regions.region_id = title_localized.region_id",
-                "attribute": "attribute.attribute_id = title_localized.attribute_id"
+                "attribute": "attribute.title_context_id = title_localized.title_context_id"
               },
               "nl_rules": {
                 "original title": "is_original_title = true",

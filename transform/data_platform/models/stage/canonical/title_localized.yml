@@ -9,7 +9,7 @@ models:
             - title_id
             - region_id
             - language_id
-            - attribute_id
+            - title_context_id
             - ordering
       - distinct_region_count_matches
       - distinct_language_count_matches
@@ -42,12 +42,12 @@ models:
           - relationships:
               to: ref('languages')
               field: language_id
-      - name: attribute_id
+      - name: title_context_id
         description: Attribute describing the type of localized title.
         tests:
           - relationships:
-              to: ref('attribute')
-              field: attribute_id
+              to: ref('title_context')
+              field: title_context_id
       - name: is_original_title
         description: Indicates whether this is the original title for the region/language.
         tests:

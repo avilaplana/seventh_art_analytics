@@ -14,7 +14,7 @@ WITH title_akas_cleaned AS (
     CASE
         WHEN attributes = '\\N' THEN NULL
         ELSE attributes
-      END AS attribute_name,  
+      END AS title_context_name,  
     CASE
       WHEN isOriginalTitle = 0 THEN FALSE
       ELSE TRUE
@@ -31,7 +31,7 @@ SELECT
   tac.ordering,
   rr.region_id,
   ll.language_id,
-  aa.attribute_id,
+  tc.title_context_id,
   tac.is_original_title,
   tac.snapshot_date,
   tac.ingested_at_timestamp,
@@ -41,5 +41,5 @@ LEFT JOIN {{ ref('regions') }} rr
 ON tac.region_code = rr.region_code
 LEFT JOIN {{ ref('languages') }} ll
 ON tac.language_code = ll.language_code
-LEFT JOIN {{ ref('attribute') }} aa
-ON tac.attribute_name = aa.attribute_name
+LEFT JOIN {{ ref('title_context') }} tc
+ON tac.title_context_name = tc.title_context_name

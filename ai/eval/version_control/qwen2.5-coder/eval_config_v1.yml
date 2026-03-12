@@ -38,7 +38,7 @@ eval_config:
             "name": "attribute",
             "description": "Lookup table describing attributes associated with localized titles, such as alternative titles, original titles, or other naming qualifiers.",
             "columns": [
-              {"name": "attribute_id", "description": "Primary key identifying a title attribute", "type": "string"},
+              {"name": "title_context_id", "description": "Primary key identifying a title attribute", "type": "string"},
               {"name": "attribute_name", "description": "Human-readable name of the title attribute", "type": "string"}
             ]
           },
@@ -141,7 +141,7 @@ eval_config:
               {"name": "ordering", "description": "Ordering index when multiple localized titles exist", "type": "string"},
               {"name": "region_id", "description": "Region where the localized title is used", "type": "bigint"},
               {"name": "language_id", "description": "Language of the localized title", "type": "bigint"},
-              {"name": "attribute_id", "description": "Attribute describing the type of localized title", "type": "string"},
+              {"name": "title_context_id", "description": "Attribute describing the type of localized title", "type": "string"},
               {"name": "is_original_title", "description": "Indicates whether this is the original title for the region/language", "type": "boolean"}
             ]
           },

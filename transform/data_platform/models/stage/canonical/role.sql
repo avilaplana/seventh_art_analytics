@@ -43,7 +43,7 @@ all_roles AS (
 )
 
 SELECT
-  UUID() AS role_id,
+  {{ dbt_utils.generate_surrogate_key(['role']) }} AS role_id,
   role AS role_name,
   snapshot_date,
   ingested_at_timestamp,
