@@ -1,16 +1,29 @@
 models:
   - name: role
+    config:
+      contract:
+        enforced: true  
     description: >
       Lookup table defining high-level roles a person can have
       in relation to a title (e.g. Actor, Director).
     columns:
       - name: role_id
+        data_type: string
         description: Primary key identifying a role.
         tests:
           - not_null
           - unique
       - name: role_name
+        data_type: string
         description: Name of the role.
         tests:
           - not_null
           - unique
+      - name: ingested_at_timestamp
+        data_type: timestamp
+
+      - name: snapshot_date
+        data_type: date
+
+      - name: snapshot_try
+        data_type: int          

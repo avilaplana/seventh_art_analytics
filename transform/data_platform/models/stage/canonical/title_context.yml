@@ -1,16 +1,29 @@
 models:
   - name: title_context
+    config:
+      contract:
+        enforced: true    
     description: >
       Lookup table describing attributes associated with localized titles,
       such as alternative titles, original titles, or other naming qualifiers.
     columns:
       - name: title_context_id
+        data_type: string
         description: Primary key identifying a title context.
         tests:
           - not_null
           - unique
       - name: title_context_name
+        data_type: string
         description: Human-readable name of the title context.
         tests:
           - not_null
           - unique
+      - name: ingested_at_timestamp
+        data_type: timestamp
+
+      - name: snapshot_date
+        data_type: date
+
+      - name: snapshot_try
+        data_type: int          

@@ -16,7 +16,7 @@ SELECT
     WHEN tb.runtimeMinutes = '\\N' THEN NULL
     ELSE CAST(tb.runtimeMinutes AS INT)
     END AS duration_minutes,
-        CAST(COALESCE(tr.averageRating, 0) AS DOUBLE) AS average_rating,
+        CAST(COALESCE(tr.averageRating, 0) AS DECIMAL(18,2)) AS average_rating,
         CAST(COALESCE(tr.numVotes, 0) AS INT) AS number_of_votes,
     CAST(tb.snapshot_date AS DATE) AS snapshot_date,
     CAST(tb.ingested_at_timestamp AS TIMESTAMP) AS ingested_at_timestamp,

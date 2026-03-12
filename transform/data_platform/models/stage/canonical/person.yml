@@ -1,19 +1,42 @@
 models:
   - name: person
+    config:
+      contract:
+        enforced: true  
     description: >
       Master table containing people involved in titles,
       such as actors, directors, writers, and other crew members.
     columns:
       - name: person_id
+        data_type: string
         description: Primary key identifying a person.
         tests:
           - not_null
           - unique
       - name: name
+        data_type: string
         description: Full name of the person.
         tests:
           - not_null
       - name: birth_year
+        data_type: int
         description: Year the person was born.
       - name: death_year
+        data_type: int
         description: Year the person died, if applicable.
+      - name: ingested_at_timestamp
+        data_type: timestamp
+
+      - name: snapshot_date
+        data_type: date
+
+      - name: snapshot_try
+        data_type: int
+      - name: ingested_at_timestamp
+        data_type: timestamp
+
+      - name: snapshot_date
+        data_type: date
+
+      - name: snapshot_try
+        data_type: int        

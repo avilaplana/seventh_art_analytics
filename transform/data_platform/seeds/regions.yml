@@ -2,12 +2,16 @@ version: 2
 
 seeds:
   - name: regions
+    config:
+      contract:
+        enforced: true      
     description: >
       Reference table of regions and countries based on ISO 3166-1,
       including historical, reserved, private-use, and explicit UNKNOWN
       region codes as provided by upstream sources.
     columns:
       - name: region_id
+        type: bigint
         description: >
           Surrogate identifier for the region. Deterministic and stable,
           generated from the ordered seed to allow safe joins.
@@ -16,6 +20,7 @@ seeds:
           - unique
 
       - name: region_code
+        type: string
         description: >
           Region or country code as received from source systems.
           Primarily ISO 3166-1 alpha-2, but may include historical,
@@ -25,6 +30,7 @@ seeds:
           - unique
 
       - name: iso_standard
+        type: string
         description: >
           Classification of the region code standard.
           Examples include:
@@ -37,6 +43,7 @@ seeds:
           - not_null
 
       - name: region_name
+        type: string
         description: >
           Canonical English name of the region or country.
           For historical or aggregate codes, reflects the commonly
@@ -45,6 +52,7 @@ seeds:
           - not_null
 
       - name: notes
+        type: string
         description: >
           Optional contextual notes describing historical status,
           political changes, special usage, or source-specific meaning.

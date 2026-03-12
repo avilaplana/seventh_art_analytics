@@ -1,16 +1,29 @@
 models:
   - name: title_type
+    config:
+      contract:
+        enforced: true    
     description: >
       Lookup table defining the type of a title,
       such as movie, TV series, episode, or short.
     columns:
       - name: title_type_id
+        data_type: string
         description: Primary key identifying a title type.
         tests:
           - not_null
           - unique
       - name: title_type_name
+        data_type: string
         description: Name of the title type.
         tests:
           - not_null
           - unique
+      - name: ingested_at_timestamp
+        data_type: timestamp
+
+      - name: snapshot_date
+        data_type: date
+
+      - name: snapshot_try
+        data_type: int          

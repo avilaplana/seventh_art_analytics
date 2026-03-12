@@ -1,5 +1,8 @@
 models:
   - name: title_person_role
+    config:
+      contract:
+        enforced: true  
     description: >
       Fact table linking titles, people, and roles,
       describing who did what on each title.
@@ -11,6 +14,7 @@ models:
             - role_id
     columns:
       - name: title_id
+        data_type: string
         description: Foreign key to the title.
         tests:
           - not_null
@@ -18,6 +22,7 @@ models:
               to: ref('title')
               field: title_id
       - name: person_id
+        data_type: string
         description: Foreign key to the person.
         tests:
           - not_null
@@ -25,6 +30,7 @@ models:
               to: ref('person')
               field: person_id
       - name: role_id
+        data_type: string
         description: Foreign key to the role.
         tests:
           - not_null
@@ -32,12 +38,23 @@ models:
               to: ref('role')
               field: role_id
       - name: job
+        data_type: string
         description: Specific job performed by the person on the title.
       - name: number_of_roles
+        data_type: bigint
         description: Number of distinct roles performed by the person in the title.
         tests:
           - not_null
       - name: characters
+        data_type: map<string,string>
         description: Character names portrayed by the person, if applicable.
         tests:
           - not_null
+      - name: ingested_at_timestamp
+        data_type: timestamp
+
+      - name: snapshot_date
+        data_type: date
+
+      - name: snapshot_try
+        data_type: int          

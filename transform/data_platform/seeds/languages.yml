@@ -2,21 +2,28 @@ version: 2
 
 seeds:
   - name: languages
+    config:
+      contract:
+        enforced: true    
+
     description: Reference table of supported language codes
     columns:
       - name: language_id
+        type: int
         description: Stable surrogate key for the language
         tests:
           - unique
           - not_null
 
       - name: language_code
+        type: string
         description: ISO 639 language code
         tests:
           - unique
           - not_null
 
       - name: iso_standard
+        type: string
         description: ISO standard or classification for the language code
         tests:
           - not_null
@@ -28,9 +35,11 @@ seeds:
                 - private_use
 
       - name: language_name
+        type: string
         description: English display name of the language
         tests:
           - not_null
 
       - name: notes
+        type: string
         description: Additional context such as macrolanguage, historical usage, or private-use notes

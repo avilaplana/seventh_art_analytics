@@ -1,5 +1,8 @@
 models:
   - name: title_localized
+    config:
+      contract:
+        enforced: true        
     description: >
       Table containing localized versions of titles by region and language,
       including alternative and original titles.
@@ -15,6 +18,7 @@ models:
       - distinct_language_count_matches
     columns:
       - name: title_id
+        data_type: string
         description: Foreign key to the title.
         tests:
           - not_null
@@ -23,32 +27,46 @@ models:
               field: title_id
               severity: warn
       - name: title
+        data_type: string
         description: Localized title text.
         tests:
           - not_null
       - name: ordering
+        data_type: int
         description: Ordering index when multiple localized titles exist.
         tests:
           - not_null
       - name: region_id
+        data_type: bigint
         description: Region where the localized title is used.
         tests:
           - relationships:
               to: ref('regions')
               field: region_id
       - name: language_id
+        data_type: bigint
         description: Language of the localized title.
         tests:
           - relationships:
               to: ref('languages')
               field: language_id
       - name: title_context_id
+        data_type: string
         description: Attribute describing the type of localized title.
         tests:
           - relationships:
               to: ref('title_context')
               field: title_context_id
       - name: is_original_title
+        data_type: boolean
         description: Indicates whether this is the original title for the region/language.
         tests:
           - not_null
+      - name: ingested_at_timestamp
+        data_type: timestamp
+
+      - name: snapshot_date
+        data_type: date
+
+      - name: snapshot_try
+        data_type: int          
